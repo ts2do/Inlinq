@@ -1295,7 +1295,7 @@ namespace Inlinq
             where TKeySelector : IFunctor<TSource, TKey>
         {
             return Lookup<TKey, TSource, EquatableEqualityComparer<TKey>>.Create(
-                source ?? throw Error.ArgumentNull(nameof(source)), (keySelector ?? throw Error.ArgumentNull(nameof(keySelector))).Unwrap(), new Identity<TSource>(), EqualityComparers.Equatable<TKey>());
+                source ?? throw Error.ArgumentNull(nameof(source)), (keySelector ?? throw Error.ArgumentNull(nameof(keySelector))).Unwrap(), new IdentityFunctor<TSource>(), EqualityComparers.Equatable<TKey>());
         }
 
         public static Lookup<TKey, TSource, EquatableEqualityComparer<TKey>> ToLookup<TSource, TKey, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector)
@@ -1304,7 +1304,7 @@ namespace Inlinq
         {
             return Lookup<TKey, TSource, EquatableEqualityComparer<TKey>>.Create(
                 source ?? throw Error.ArgumentNull(nameof(source)), new FuncFunctor<TSource, TKey>(keySelector ?? throw Error.ArgumentNull(nameof(keySelector))),
-                new Identity<TSource>(), EqualityComparers.Equatable<TKey>());
+                new IdentityFunctor<TSource>(), EqualityComparers.Equatable<TKey>());
         }
 
         public static Lookup<TKey, TSource, IEqualityComparer<TKey>>
@@ -1313,7 +1313,7 @@ namespace Inlinq
             where TKeySelector : IFunctor<TSource, TKey>
         {
             return Lookup<TKey, TSource, IEqualityComparer<TKey>>.Create(
-                source ?? throw Error.ArgumentNull(nameof(source)), (keySelector ?? throw Error.ArgumentNull(nameof(keySelector))).Unwrap(), new Identity<TSource>(), comparer ?? EqualityComparer<TKey>.Default);
+                source ?? throw Error.ArgumentNull(nameof(source)), (keySelector ?? throw Error.ArgumentNull(nameof(keySelector))).Unwrap(), new IdentityFunctor<TSource>(), comparer ?? EqualityComparer<TKey>.Default);
         }
 
         public static Lookup<TKey, TSource, IEqualityComparer<TKey>>
@@ -1322,7 +1322,7 @@ namespace Inlinq
         {
             return Lookup<TKey, TSource, IEqualityComparer<TKey>>.Create(
                 source ?? throw Error.ArgumentNull(nameof(source)), new FuncFunctor<TSource, TKey>(keySelector ?? throw Error.ArgumentNull(nameof(keySelector))),
-                new Identity<TSource>(), comparer ?? EqualityComparer<TKey>.Default);
+                new IdentityFunctor<TSource>(), comparer ?? EqualityComparer<TKey>.Default);
         }
 
         public static Lookup<TKey, TSource, TEqualityComparer>
@@ -1332,7 +1332,7 @@ namespace Inlinq
             where TEqualityComparer : struct, IEqualityComparer<TKey>
         {
             return Lookup<TKey, TSource, TEqualityComparer>.Create(
-                source ?? throw Error.ArgumentNull(nameof(source)), (keySelector ?? throw Error.ArgumentNull(nameof(keySelector))).Unwrap(), new Identity<TSource>(), comparer);
+                source ?? throw Error.ArgumentNull(nameof(source)), (keySelector ?? throw Error.ArgumentNull(nameof(keySelector))).Unwrap(), new IdentityFunctor<TSource>(), comparer);
         }
 
         public static Lookup<TKey, TSource, TEqualityComparer>
@@ -1341,7 +1341,7 @@ namespace Inlinq
             where TEqualityComparer : struct, IEqualityComparer<TKey>
         {
             return Lookup<TKey, TSource, TEqualityComparer>.Create(
-                source ?? throw Error.ArgumentNull(nameof(source)), new FuncFunctor<TSource, TKey>(keySelector ?? throw Error.ArgumentNull(nameof(keySelector))), new Identity<TSource>(), comparer);
+                source ?? throw Error.ArgumentNull(nameof(source)), new FuncFunctor<TSource, TKey>(keySelector ?? throw Error.ArgumentNull(nameof(keySelector))), new IdentityFunctor<TSource>(), comparer);
         }
 
         public static Lookup<TKey, TElement, EquatableEqualityComparer<TKey>>
@@ -1419,14 +1419,14 @@ namespace Inlinq
             where TKeySelector : IFunctor<TSource, string>
         {
             return Lookup<string, TSource, Cmp.StringComparer>.Create(
-                source ?? throw Error.ArgumentNull(nameof(source)), (keySelector ?? throw Error.ArgumentNull(nameof(keySelector))).Unwrap(), new Identity<TSource>(), new Cmp.StringComparer());
+                source ?? throw Error.ArgumentNull(nameof(source)), (keySelector ?? throw Error.ArgumentNull(nameof(keySelector))).Unwrap(), new IdentityFunctor<TSource>(), new Cmp.StringComparer());
         }
 
         public static Lookup<string, TSource, Cmp.StringComparer> ToLookup<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, string> keySelector)
             where TEnumerator : IEnumerator<TSource>
         {
             return Lookup<string, TSource, Cmp.StringComparer>.Create(
-                source ?? throw Error.ArgumentNull(nameof(source)), new FuncFunctor<TSource, string>(keySelector ?? throw Error.ArgumentNull(nameof(keySelector))), new Identity<TSource>(), new Cmp.StringComparer());
+                source ?? throw Error.ArgumentNull(nameof(source)), new FuncFunctor<TSource, string>(keySelector ?? throw Error.ArgumentNull(nameof(keySelector))), new IdentityFunctor<TSource>(), new Cmp.StringComparer());
         }
 
         public static Lookup<string, TElement, Cmp.StringComparer>
@@ -1459,7 +1459,7 @@ namespace Inlinq
             where TKeySelector : IFunctor<TSource, TKey?>
         {
             return Lookup<TKey?, TSource, NullableEqualityComparer<TKey, EquatableEqualityComparer<TKey>>>.Create(
-                source ?? throw Error.ArgumentNull(nameof(source)), (keySelector ?? throw Error.ArgumentNull(nameof(keySelector))).Unwrap(), new Identity<TSource>(), EqualityComparers.Nullable<TKey>());
+                source ?? throw Error.ArgumentNull(nameof(source)), (keySelector ?? throw Error.ArgumentNull(nameof(keySelector))).Unwrap(), new IdentityFunctor<TSource>(), EqualityComparers.Nullable<TKey>());
         }
 
         public static Lookup<TKey?, TSource, NullableEqualityComparer<TKey, EquatableEqualityComparer<TKey>>>
@@ -1469,7 +1469,7 @@ namespace Inlinq
         {
             return Lookup<TKey?, TSource, NullableEqualityComparer<TKey, EquatableEqualityComparer<TKey>>>.Create(
                 source ?? throw Error.ArgumentNull(nameof(source)), new FuncFunctor<TSource, TKey?>(keySelector ?? throw Error.ArgumentNull(nameof(keySelector))),
-                new Identity<TSource>(), EqualityComparers.Nullable<TKey>());
+                new IdentityFunctor<TSource>(), EqualityComparers.Nullable<TKey>());
         }
 
         public static Lookup<TKey?, TElement, NullableEqualityComparer<TKey, EquatableEqualityComparer<TKey>>>

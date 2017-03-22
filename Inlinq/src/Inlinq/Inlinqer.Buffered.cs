@@ -101,61 +101,61 @@ namespace Inlinq
         #endregion
 
         #region GroupBy
-        public static GroupByEnumerable<TSource, TEnumerator, TKey, TSource, TKeySelector, Identity<TSource>, EquatableEqualityComparer<TKey>>
+        public static GroupByEnumerable<TSource, TEnumerator, TKey, TSource, TKeySelector, IdentityFunctor<TSource>, EquatableEqualityComparer<TKey>>
             GroupBy<TSource, TEnumerator, TKeySelector, TKey>(this IEnumerable<TSource, TEnumerator> source, ITFunctor<TKeySelector, TSource, TKey> keySelector)
             where TKey : IEquatable<TKey>
             where TEnumerator : IEnumerator<TSource>
             where TKeySelector : IFunctor<TSource, TKey>
         {
-            return new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, TKeySelector, Identity<TSource>, EquatableEqualityComparer<TKey>>(
-                source ?? throw Error.ArgumentNull(nameof(source)), (keySelector ?? throw Error.ArgumentNull(nameof(keySelector))).Unwrap(), new Identity<TSource>(), EqualityComparers.Equatable<TKey>());
+            return new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, TKeySelector, IdentityFunctor<TSource>, EquatableEqualityComparer<TKey>>(
+                source ?? throw Error.ArgumentNull(nameof(source)), (keySelector ?? throw Error.ArgumentNull(nameof(keySelector))).Unwrap(), new IdentityFunctor<TSource>(), EqualityComparers.Equatable<TKey>());
         }
 
-        public static GroupByEnumerable<TSource, TEnumerator, TKey, TSource, FuncFunctor<TSource, TKey>, Identity<TSource>, EquatableEqualityComparer<TKey>>
+        public static GroupByEnumerable<TSource, TEnumerator, TKey, TSource, FuncFunctor<TSource, TKey>, IdentityFunctor<TSource>, EquatableEqualityComparer<TKey>>
             GroupBy<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector)
             where TKey : IEquatable<TKey>
             where TEnumerator : IEnumerator<TSource>
         {
-            return new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, FuncFunctor<TSource, TKey>, Identity<TSource>, EquatableEqualityComparer<TKey>>(
+            return new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, FuncFunctor<TSource, TKey>, IdentityFunctor<TSource>, EquatableEqualityComparer<TKey>>(
                 source ?? throw Error.ArgumentNull(nameof(source)), new FuncFunctor<TSource, TKey>(keySelector ?? throw Error.ArgumentNull(nameof(keySelector))),
-                new Identity<TSource>(), EqualityComparers.Equatable<TKey>());
+                new IdentityFunctor<TSource>(), EqualityComparers.Equatable<TKey>());
         }
 
-        public static GroupByEnumerable<TSource, TEnumerator, TKey, TSource, TKeySelector, Identity<TSource>, IEqualityComparer<TKey>>
+        public static GroupByEnumerable<TSource, TEnumerator, TKey, TSource, TKeySelector, IdentityFunctor<TSource>, IEqualityComparer<TKey>>
             GroupBy<TSource, TEnumerator, TKeySelector, TKey>(this IEnumerable<TSource, TEnumerator> source, ITFunctor<TKeySelector, TSource, TKey> keySelector, IEqualityComparer<TKey> comparer)
             where TEnumerator : IEnumerator<TSource>
             where TKeySelector : IFunctor<TSource, TKey>
         {
-            return new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, TKeySelector, Identity<TSource>, IEqualityComparer<TKey>>(
-                source ?? throw Error.ArgumentNull(nameof(source)), (keySelector ?? throw Error.ArgumentNull(nameof(keySelector))).Unwrap(), new Identity<TSource>(), comparer ?? EqualityComparer<TKey>.Default);
+            return new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, TKeySelector, IdentityFunctor<TSource>, IEqualityComparer<TKey>>(
+                source ?? throw Error.ArgumentNull(nameof(source)), (keySelector ?? throw Error.ArgumentNull(nameof(keySelector))).Unwrap(), new IdentityFunctor<TSource>(), comparer ?? EqualityComparer<TKey>.Default);
         }
 
-        public static GroupByEnumerable<TSource, TEnumerator, TKey, TSource, TKeySelector, Identity<TSource>, IEqualityComparer<TKey>>
+        public static GroupByEnumerable<TSource, TEnumerator, TKey, TSource, TKeySelector, IdentityFunctor<TSource>, IEqualityComparer<TKey>>
             GroupBy<TSource, TEnumerator, TKeySelector, TKey, TEqualityComparer>(this IEnumerable<TSource, TEnumerator> source, ITFunctor<TKeySelector, TSource, TKey> keySelector, TEqualityComparer comparer)
             where TEnumerator : IEnumerator<TSource>
             where TKeySelector : IFunctor<TSource, TKey>
             where TEqualityComparer : struct, IEqualityComparer<TKey>
         {
-            return new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, TKeySelector, Identity<TSource>, IEqualityComparer<TKey>>(
-                source ?? throw Error.ArgumentNull(nameof(source)), (keySelector ?? throw Error.ArgumentNull(nameof(keySelector))).Unwrap(), new Identity<TSource>(), comparer);
+            return new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, TKeySelector, IdentityFunctor<TSource>, IEqualityComparer<TKey>>(
+                source ?? throw Error.ArgumentNull(nameof(source)), (keySelector ?? throw Error.ArgumentNull(nameof(keySelector))).Unwrap(), new IdentityFunctor<TSource>(), comparer);
         }
 
-        public static GroupByEnumerable<TSource, TEnumerator, TKey, TSource, FuncFunctor<TSource, TKey>, Identity<TSource>, IEqualityComparer<TKey>>
+        public static GroupByEnumerable<TSource, TEnumerator, TKey, TSource, FuncFunctor<TSource, TKey>, IdentityFunctor<TSource>, IEqualityComparer<TKey>>
             GroupBy<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, IEqualityComparer<TKey> comparer)
             where TEnumerator : IEnumerator<TSource>
         {
-            return new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, FuncFunctor<TSource, TKey>, Identity<TSource>, IEqualityComparer<TKey>>(
+            return new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, FuncFunctor<TSource, TKey>, IdentityFunctor<TSource>, IEqualityComparer<TKey>>(
                 source ?? throw Error.ArgumentNull(nameof(source)), new FuncFunctor<TSource, TKey>(keySelector ?? throw Error.ArgumentNull(nameof(keySelector))),
-                new Identity<TSource>(), comparer ?? EqualityComparer<TKey>.Default);
+                new IdentityFunctor<TSource>(), comparer ?? EqualityComparer<TKey>.Default);
         }
 
-        public static GroupByEnumerable<TSource, TEnumerator, TKey, TSource, FuncFunctor<TSource, TKey>, Identity<TSource>, IEqualityComparer<TKey>>
+        public static GroupByEnumerable<TSource, TEnumerator, TKey, TSource, FuncFunctor<TSource, TKey>, IdentityFunctor<TSource>, IEqualityComparer<TKey>>
             GroupBy<TSource, TEnumerator, TKey, TEqualityComparer>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, TEqualityComparer comparer)
             where TEnumerator : IEnumerator<TSource>
             where TEqualityComparer : struct, IEqualityComparer<TKey>
         {
-            return new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, FuncFunctor<TSource, TKey>, Identity<TSource>, IEqualityComparer<TKey>>(
-                source ?? throw Error.ArgumentNull(nameof(source)), new FuncFunctor<TSource, TKey>(keySelector ?? throw Error.ArgumentNull(nameof(keySelector))), new Identity<TSource>(), comparer);
+            return new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, FuncFunctor<TSource, TKey>, IdentityFunctor<TSource>, IEqualityComparer<TKey>>(
+                source ?? throw Error.ArgumentNull(nameof(source)), new FuncFunctor<TSource, TKey>(keySelector ?? throw Error.ArgumentNull(nameof(keySelector))), new IdentityFunctor<TSource>(), comparer);
         }
 
         public static GroupByEnumerable<TSource, TEnumerator, TKey, TElement, TKeySelector, TElementSelector, EquatableEqualityComparer<TKey>>
@@ -235,9 +235,9 @@ namespace Inlinq
             where TResultSelector : IFunctor<Grouping<TKey, TSource>, TResult>
         {
             return new SelectEnumerable<Grouping<TKey, TSource>, TResult, GroupingEnumerator<TKey, TSource>, TResultSelector>(
-                new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, TKeySelector, Identity<TSource>, EquatableEqualityComparer<TKey>>(
+                new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, TKeySelector, IdentityFunctor<TSource>, EquatableEqualityComparer<TKey>>(
                     source ?? throw Error.ArgumentNull(nameof(source)), (keySelector ?? throw Error.ArgumentNull(nameof(keySelector))).Unwrap(),
-                    new Identity<TSource>(), EqualityComparers.Equatable<TKey>()), (resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector))).Unwrap());
+                    new IdentityFunctor<TSource>(), EqualityComparers.Equatable<TKey>()), (resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector))).Unwrap());
         }
 
         public static SelectEnumerable<Grouping<TKey, TSource>, TResult, GroupingEnumerator<TKey, TSource>, FuncFunctor<Grouping<TKey, TSource>, TResult>>
@@ -246,9 +246,9 @@ namespace Inlinq
             where TEnumerator : IEnumerator<TSource>
         {
             return new SelectEnumerable<Grouping<TKey, TSource>, TResult, GroupingEnumerator<TKey, TSource>, FuncFunctor<Grouping<TKey, TSource>, TResult>>(
-                new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, FuncFunctor<TSource, TKey>, Identity<TSource>, EquatableEqualityComparer<TKey>>(
+                new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, FuncFunctor<TSource, TKey>, IdentityFunctor<TSource>, EquatableEqualityComparer<TKey>>(
                     source ?? throw Error.ArgumentNull(nameof(source)), new FuncFunctor<TSource, TKey>(keySelector ?? throw Error.ArgumentNull(nameof(keySelector))),
-                    new Identity<TSource>(), EqualityComparers.Equatable<TKey>()), new FuncFunctor<Grouping<TKey, TSource>, TResult>(resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector))));
+                    new IdentityFunctor<TSource>(), EqualityComparers.Equatable<TKey>()), new FuncFunctor<Grouping<TKey, TSource>, TResult>(resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector))));
         }
 
         public static SelectEnumerable<Grouping<TKey, TSource>, TResult, GroupingEnumerator<TKey, TSource>, TResultSelector>
@@ -259,9 +259,9 @@ namespace Inlinq
             where TResultSelector : IFunctor<Grouping<TKey, TSource>, TResult>
         {
             return new SelectEnumerable<Grouping<TKey, TSource>, TResult, GroupingEnumerator<TKey, TSource>, TResultSelector>(
-                new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, TKeySelector, Identity<TSource>, IEqualityComparer<TKey>>(
+                new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, TKeySelector, IdentityFunctor<TSource>, IEqualityComparer<TKey>>(
                     source ?? throw Error.ArgumentNull(nameof(source)), (keySelector ?? throw Error.ArgumentNull(nameof(keySelector))).Unwrap(),
-                    new Identity<TSource>(), comparer ?? EqualityComparer<TKey>.Default), (resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector))).Unwrap());
+                    new IdentityFunctor<TSource>(), comparer ?? EqualityComparer<TKey>.Default), (resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector))).Unwrap());
         }
 
         public static SelectEnumerable<Grouping<TKey, TSource>, TResult, GroupingEnumerator<TKey, TSource>, TResultSelector>
@@ -273,9 +273,9 @@ namespace Inlinq
             where TEqualityComparer : struct, IEqualityComparer<TKey>
         {
             return new SelectEnumerable<Grouping<TKey, TSource>, TResult, GroupingEnumerator<TKey, TSource>, TResultSelector>(
-                new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, TKeySelector, Identity<TSource>, IEqualityComparer<TKey>>(
+                new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, TKeySelector, IdentityFunctor<TSource>, IEqualityComparer<TKey>>(
                     source ?? throw Error.ArgumentNull(nameof(source)), (keySelector ?? throw Error.ArgumentNull(nameof(keySelector))).Unwrap(),
-                    new Identity<TSource>(), comparer), (resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector))).Unwrap());
+                    new IdentityFunctor<TSource>(), comparer), (resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector))).Unwrap());
         }
 
         public static SelectEnumerable<Grouping<TKey, TSource>, TResult, GroupingEnumerator<TKey, TSource>, FuncFunctor<Grouping<TKey, TSource>, TResult>>
@@ -284,9 +284,9 @@ namespace Inlinq
             where TEnumerator : IEnumerator<TSource>
         {
             return new SelectEnumerable<Grouping<TKey, TSource>, TResult, GroupingEnumerator<TKey, TSource>, FuncFunctor<Grouping<TKey, TSource>, TResult>>(
-                new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, FuncFunctor<TSource, TKey>, Identity<TSource>, IEqualityComparer<TKey>>(
+                new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, FuncFunctor<TSource, TKey>, IdentityFunctor<TSource>, IEqualityComparer<TKey>>(
                     source ?? throw Error.ArgumentNull(nameof(source)), new FuncFunctor<TSource, TKey>(keySelector ?? throw Error.ArgumentNull(nameof(keySelector))),
-                    new Identity<TSource>(), comparer ?? EqualityComparer<TKey>.Default), new FuncFunctor<Grouping<TKey, TSource>, TResult>(resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector))));
+                    new IdentityFunctor<TSource>(), comparer ?? EqualityComparer<TKey>.Default), new FuncFunctor<Grouping<TKey, TSource>, TResult>(resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector))));
         }
 
         public static SelectEnumerable<Grouping<TKey, TSource>, TResult, GroupingEnumerator<TKey, TSource>, FuncFunctor<Grouping<TKey, TSource>, TResult>>
@@ -296,9 +296,9 @@ namespace Inlinq
             where TEqualityComparer : struct, IEqualityComparer<TKey>
         {
             return new SelectEnumerable<Grouping<TKey, TSource>, TResult, GroupingEnumerator<TKey, TSource>, FuncFunctor<Grouping<TKey, TSource>, TResult>>(
-                new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, FuncFunctor<TSource, TKey>, Identity<TSource>, IEqualityComparer<TKey>>(
+                new GroupByEnumerable<TSource, TEnumerator, TKey, TSource, FuncFunctor<TSource, TKey>, IdentityFunctor<TSource>, IEqualityComparer<TKey>>(
                     source ?? throw Error.ArgumentNull(nameof(source)), new FuncFunctor<TSource, TKey>(keySelector ?? throw Error.ArgumentNull(nameof(keySelector))),
-                    new Identity<TSource>(), comparer), new FuncFunctor<Grouping<TKey, TSource>, TResult>(resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector))));
+                    new IdentityFunctor<TSource>(), comparer), new FuncFunctor<Grouping<TKey, TSource>, TResult>(resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector))));
         }
 
         public static SelectEnumerable<Grouping<TKey, TElement>, TResult, GroupingEnumerator<TKey, TElement>, TResultSelector>
