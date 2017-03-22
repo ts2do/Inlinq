@@ -19,7 +19,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, decimal, TEnumerator, FuncFunc<TSource, decimal>>(source.GetEnumerator(), new FuncFunc<TSource, decimal>(selector)))
+            using (var e = new SelectEnumerator<TSource, decimal, TEnumerator, FuncFunctor<TSource, decimal>>(source.GetEnumerator(), new FuncFunctor<TSource, decimal>(selector)))
                 return Average_Decimal(e);
         }
 
@@ -35,7 +35,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, decimal?, TEnumerator, FuncFunc<TSource, decimal?>>(source.GetEnumerator(), new FuncFunc<TSource, decimal?>(selector)))
+            using (var e = new SelectEnumerator<TSource, decimal?, TEnumerator, FuncFunctor<TSource, decimal?>>(source.GetEnumerator(), new FuncFunctor<TSource, decimal?>(selector)))
                 return Average_NullableOfDecimal(e);
         }
 
@@ -98,7 +98,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, decimal, TEnumerator, FuncFunc<TSource, decimal>>(source.GetEnumerator(), new FuncFunc<TSource, decimal>(selector)))
+            using (var e = new SelectEnumerator<TSource, decimal, TEnumerator, FuncFunctor<TSource, decimal>>(source.GetEnumerator(), new FuncFunctor<TSource, decimal>(selector)))
                 return Max_Decimal(e);
         }
 
@@ -114,7 +114,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, decimal?, TEnumerator, FuncFunc<TSource, decimal?>>(source.GetEnumerator(), new FuncFunc<TSource, decimal?>(selector)))
+            using (var e = new SelectEnumerator<TSource, decimal?, TEnumerator, FuncFunctor<TSource, decimal?>>(source.GetEnumerator(), new FuncFunctor<TSource, decimal?>(selector)))
                 return Max_NullableOfDecimal(e);
         }
 
@@ -167,7 +167,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, decimal, TEnumerator, FuncFunc<TSource, decimal>>(source.GetEnumerator(), new FuncFunc<TSource, decimal>(selector)))
+            using (var e = new SelectEnumerator<TSource, decimal, TEnumerator, FuncFunctor<TSource, decimal>>(source.GetEnumerator(), new FuncFunctor<TSource, decimal>(selector)))
                 return Min_Decimal(e);
         }
 
@@ -183,7 +183,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, decimal?, TEnumerator, FuncFunc<TSource, decimal?>>(source.GetEnumerator(), new FuncFunc<TSource, decimal?>(selector)))
+            using (var e = new SelectEnumerator<TSource, decimal?, TEnumerator, FuncFunctor<TSource, decimal?>>(source.GetEnumerator(), new FuncFunctor<TSource, decimal?>(selector)))
                 return Min_NullableOfDecimal(e);
         }
 
@@ -236,7 +236,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, decimal, TEnumerator, FuncFunc<TSource, decimal>>(source.GetEnumerator(), new FuncFunc<TSource, decimal>(selector)))
+            using (var e = new SelectEnumerator<TSource, decimal, TEnumerator, FuncFunctor<TSource, decimal>>(source.GetEnumerator(), new FuncFunctor<TSource, decimal>(selector)))
                 return Sum_Decimal(e);
         }
 
@@ -252,7 +252,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, decimal?, TEnumerator, FuncFunc<TSource, decimal?>>(source.GetEnumerator(), new FuncFunc<TSource, decimal?>(selector)))
+            using (var e = new SelectEnumerator<TSource, decimal?, TEnumerator, FuncFunctor<TSource, decimal?>>(source.GetEnumerator(), new FuncFunctor<TSource, decimal?>(selector)))
                 return Sum_NullableOfDecimal(e);
         }
 

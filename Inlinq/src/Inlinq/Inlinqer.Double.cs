@@ -19,7 +19,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, double, TEnumerator, FuncFunc<TSource, double>>(source.GetEnumerator(), new FuncFunc<TSource, double>(selector)))
+            using (var e = new SelectEnumerator<TSource, double, TEnumerator, FuncFunctor<TSource, double>>(source.GetEnumerator(), new FuncFunctor<TSource, double>(selector)))
                 return Average_Double(e);
         }
 
@@ -35,7 +35,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, double?, TEnumerator, FuncFunc<TSource, double?>>(source.GetEnumerator(), new FuncFunc<TSource, double?>(selector)))
+            using (var e = new SelectEnumerator<TSource, double?, TEnumerator, FuncFunctor<TSource, double?>>(source.GetEnumerator(), new FuncFunctor<TSource, double?>(selector)))
                 return Average_NullableOfDouble(e);
         }
 
@@ -98,7 +98,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, double, TEnumerator, FuncFunc<TSource, double>>(source.GetEnumerator(), new FuncFunc<TSource, double>(selector)))
+            using (var e = new SelectEnumerator<TSource, double, TEnumerator, FuncFunctor<TSource, double>>(source.GetEnumerator(), new FuncFunctor<TSource, double>(selector)))
                 return Max_Double(e);
         }
 
@@ -114,7 +114,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, double?, TEnumerator, FuncFunc<TSource, double?>>(source.GetEnumerator(), new FuncFunc<TSource, double?>(selector)))
+            using (var e = new SelectEnumerator<TSource, double?, TEnumerator, FuncFunctor<TSource, double?>>(source.GetEnumerator(), new FuncFunctor<TSource, double?>(selector)))
                 return Max_NullableOfDouble(e);
         }
 
@@ -167,7 +167,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, double, TEnumerator, FuncFunc<TSource, double>>(source.GetEnumerator(), new FuncFunc<TSource, double>(selector)))
+            using (var e = new SelectEnumerator<TSource, double, TEnumerator, FuncFunctor<TSource, double>>(source.GetEnumerator(), new FuncFunctor<TSource, double>(selector)))
                 return Min_Double(e);
         }
 
@@ -183,7 +183,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, double?, TEnumerator, FuncFunc<TSource, double?>>(source.GetEnumerator(), new FuncFunc<TSource, double?>(selector)))
+            using (var e = new SelectEnumerator<TSource, double?, TEnumerator, FuncFunctor<TSource, double?>>(source.GetEnumerator(), new FuncFunctor<TSource, double?>(selector)))
                 return Min_NullableOfDouble(e);
         }
 
@@ -236,7 +236,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, double, TEnumerator, FuncFunc<TSource, double>>(source.GetEnumerator(), new FuncFunc<TSource, double>(selector)))
+            using (var e = new SelectEnumerator<TSource, double, TEnumerator, FuncFunctor<TSource, double>>(source.GetEnumerator(), new FuncFunctor<TSource, double>(selector)))
                 return Sum_Double(e);
         }
 
@@ -252,7 +252,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, double?, TEnumerator, FuncFunc<TSource, double?>>(source.GetEnumerator(), new FuncFunc<TSource, double?>(selector)))
+            using (var e = new SelectEnumerator<TSource, double?, TEnumerator, FuncFunctor<TSource, double?>>(source.GetEnumerator(), new FuncFunctor<TSource, double?>(selector)))
                 return Sum_NullableOfDouble(e);
         }
 

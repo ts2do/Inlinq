@@ -19,7 +19,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, int, TEnumerator, FuncFunc<TSource, int>>(source.GetEnumerator(), new FuncFunc<TSource, int>(selector)))
+            using (var e = new SelectEnumerator<TSource, int, TEnumerator, FuncFunctor<TSource, int>>(source.GetEnumerator(), new FuncFunctor<TSource, int>(selector)))
                 return Average_Int32(e);
         }
 
@@ -35,7 +35,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, int?, TEnumerator, FuncFunc<TSource, int?>>(source.GetEnumerator(), new FuncFunc<TSource, int?>(selector)))
+            using (var e = new SelectEnumerator<TSource, int?, TEnumerator, FuncFunctor<TSource, int?>>(source.GetEnumerator(), new FuncFunctor<TSource, int?>(selector)))
                 return Average_NullableOfInt32(e);
         }
 
@@ -98,7 +98,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, int, TEnumerator, FuncFunc<TSource, int>>(source.GetEnumerator(), new FuncFunc<TSource, int>(selector)))
+            using (var e = new SelectEnumerator<TSource, int, TEnumerator, FuncFunctor<TSource, int>>(source.GetEnumerator(), new FuncFunctor<TSource, int>(selector)))
                 return Max_Int32(e);
         }
 
@@ -114,7 +114,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, int?, TEnumerator, FuncFunc<TSource, int?>>(source.GetEnumerator(), new FuncFunc<TSource, int?>(selector)))
+            using (var e = new SelectEnumerator<TSource, int?, TEnumerator, FuncFunctor<TSource, int?>>(source.GetEnumerator(), new FuncFunctor<TSource, int?>(selector)))
                 return Max_NullableOfInt32(e);
         }
 
@@ -167,7 +167,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, int, TEnumerator, FuncFunc<TSource, int>>(source.GetEnumerator(), new FuncFunc<TSource, int>(selector)))
+            using (var e = new SelectEnumerator<TSource, int, TEnumerator, FuncFunctor<TSource, int>>(source.GetEnumerator(), new FuncFunctor<TSource, int>(selector)))
                 return Min_Int32(e);
         }
 
@@ -183,7 +183,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, int?, TEnumerator, FuncFunc<TSource, int?>>(source.GetEnumerator(), new FuncFunc<TSource, int?>(selector)))
+            using (var e = new SelectEnumerator<TSource, int?, TEnumerator, FuncFunctor<TSource, int?>>(source.GetEnumerator(), new FuncFunctor<TSource, int?>(selector)))
                 return Min_NullableOfInt32(e);
         }
 
@@ -236,7 +236,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, int, TEnumerator, FuncFunc<TSource, int>>(source.GetEnumerator(), new FuncFunc<TSource, int>(selector)))
+            using (var e = new SelectEnumerator<TSource, int, TEnumerator, FuncFunctor<TSource, int>>(source.GetEnumerator(), new FuncFunctor<TSource, int>(selector)))
                 return Sum_Int32(e);
         }
 
@@ -252,7 +252,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, int?, TEnumerator, FuncFunc<TSource, int?>>(source.GetEnumerator(), new FuncFunc<TSource, int?>(selector)))
+            using (var e = new SelectEnumerator<TSource, int?, TEnumerator, FuncFunctor<TSource, int?>>(source.GetEnumerator(), new FuncFunctor<TSource, int?>(selector)))
                 return Sum_NullableOfInt32(e);
         }
 
