@@ -37,5 +37,12 @@ namespace Inlinq
 
         public static bool GtUn(this long a, long b)
             => (ulong)a > (ulong)b;
+
+        public static void Swap<T>(ref T left, ref T right)
+        {
+            T temp = left;
+            left = right;
+            right = temp;
+        }
     }
 }

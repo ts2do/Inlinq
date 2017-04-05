@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Inlinq.Impl
 {
@@ -17,7 +18,7 @@ namespace Inlinq.Impl
         private int index;
 
         public T Current
-            => index.LtUn(count) ? items[index].element : throw Error.EnumerableStateException(index.GtUn(count));
+            => index.LtUn(count) ? items[items[index].index].element : throw Error.EnumerableStateException(index.GtUn(count));
 
         public OrderedEnumerator(IEnumerable<T, TEnumerator> source, TKeySelector keySelector, TComparer comparer)
         {
@@ -38,7 +39,7 @@ namespace Inlinq.Impl
                     return true;
 
                 case 0:
-                    break;
+                    return MoveNextSlow();
 
                 case 1:
                     return false;
@@ -47,7 +48,10 @@ namespace Inlinq.Impl
                     ++index;
                     return false;
             }
+        }
 
+        private bool MoveNextSlow()
+        {
             if (!source.GetCount(out int actualCount))
                 actualCount = -1;
 
@@ -66,12 +70,12 @@ namespace Inlinq.Impl
                             if (count == capacity)
                                 Array.Resize(ref items, checked(capacity *= 2));
 
-                            var p = new Pair { element = e.Current };
+                            var p = new Pair { element = e.Current, index = count };
                             p.key = keySelector.Invoke(p.element);
                             items[count++] = p;
                         } while (e.MoveNext());
 
-                        QuickSort(ref comparer, items, count, 0, count - 1);
+                        QuickSort(ref comparer, items, 0, count - 1);
                     }
                     else
                     {
@@ -86,40 +90,57 @@ namespace Inlinq.Impl
             return count > 0;
         }
 
-        private void QuickSort(ref TComparer comparer, Pair[] items, int count, int left, int right)
+        private void QuickSort(ref TComparer comparer, Pair[] items, int left, int right)
         {
             do
             {
-                int i = left, j = right;
-                TKey x = items[i + ((j - i) >> 1)].key;
-                do
-                {
-                    while (i < count && comparer.Compare(x, items[i].key) > 0)
-                        ++i;
-                    while (j >= 0 && comparer.Compare(x, items[j].key) < 0)
-                        --j;
-                    if (i > j) break;
-                    if (i < j)
-                    {
-                        ref Pair a = ref items[i], b = ref items[j];
-                        Pair temp = a;
-                        a = b;
-                        b = temp;
-                    }
-                } while (++i <= --j);
+                Partition(ref comparer, items, left, right, out int i, out int j);
                 if (j - left <= right - i)
                 {
                     if (left < j)
-                        QuickSort(ref comparer, items, count, left, j);
+                        QuickSort(ref comparer, items, left, j);
                     left = i;
                 }
                 else
                 {
                     if (i < right)
-                        QuickSort(ref comparer, items, count, i, right);
+                        QuickSort(ref comparer, items, i, right);
                     right = j;
                 }
             } while (left < right);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void Partition(ref TComparer comparer, Pair[] items, int left, int right, out int i, out int j)
+        {
+            i = left;
+            j = right;
+            TKey x = items[items[i + ((j - i) >> 1)].index].key;
+            do
+            {
+                while (i <= right && comparer.Compare(x, items[items[i].index].key) > 0)
+                    ++i;
+                while (j >= left && comparer.Compare(x, items[items[j].index].key) < 0)
+                    --j;
+                switch (j - i)
+                {
+                    default:
+                        if (i > j)
+                            break;
+
+                        Util.Swap(ref items[i].index, ref items[j].index);
+                        break;
+
+                    case 0:
+                        ++i;
+                        --j;
+                        return;
+
+                    case 1:
+                        Util.Swap(ref items[i].index, ref items[j].index);
+                        goto case 0;
+                }
+            } while (++i <= --j);
         }
 
         public void Reset()
@@ -133,10 +154,11 @@ namespace Inlinq.Impl
 
         void IDisposable.Dispose() { }
 
-        private sealed class Pair
+        private struct Pair
         {
             public T element;
             public TKey key;
+            public int index;
         }
     }
 }

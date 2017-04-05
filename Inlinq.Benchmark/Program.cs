@@ -8,12 +8,13 @@ namespace Inlinq.Benchmark
     {
         public static void Main(string[] args)
         {
-            const int Iterations = 10000;
-
-            var list = Inlinqer.Range(0, 2500).ToList();
+            const int Iterations = 10;
 
             while (true)
             {
+
+                Random r = new Random();
+                var list = Enumerable.Range(0, 100000).OrderBy(x => r.Next()).ToList();
 
                 Stopwatch s = new Stopwatch();
                 double a, b, c;
@@ -38,7 +39,7 @@ namespace Inlinq.Benchmark
                         //.Where(x => (x & 1) == 0)
                         //.SkipWhile(x => x < 100)
                         //.Select(x => x - 1)
-                        .OrderBy(x => x);
+                        .OrderBy(x => x, new Cmp.Int32Comparer());
                     s.Restart();
                     for (int i = 0; i < Iterations; ++i)
                         e.Last();
@@ -52,14 +53,14 @@ namespace Inlinq.Benchmark
                         //.Where(new IsEven())
                         //.SkipWhile(new IsLessThan(100))
                         //.Select(new Plus(-1))
-                        .OrderBy(new IdentityFunctor<int>());
+                        .OrderBy(new IdentityFunctor<int>(), new Cmp.Int32Comparer());
                     s.Restart();
                     for (int i = 0; i < Iterations; ++i)
                         e.Last();
                     c = s.Elapsed.TotalMilliseconds;
                 }
                 Console.WriteLine("{0}\t{1}\t{2}", a, b, c);
-                Console.ReadLine();
+                //Console.ReadLine();
             }
         }
 

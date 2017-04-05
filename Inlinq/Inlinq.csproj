@@ -1,21 +1,215 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
-    <TargetFramework>netstandard1.5</TargetFramework>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{8DDA5B5B-1637-4FF9-8D47-34FF575FA165}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Inlinq</RootNamespace>
     <AssemblyName>Inlinq</AssemblyName>
-    <PackageId>Inlinq</PackageId>
-    <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
   </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
-
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.Collections" Version="4.3.0" />
-    <PackageReference Include="System.Reflection" Version="4.3.0" />
-    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
-    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
-    <PackageReference Include="System.Runtime" Version="4.3.0" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
-
+  <ItemGroup>
+    <Compile Include="ArrayBuffer`2.cs" />
+    <Compile Include="Cmp\ChainedComparer`3.cs" />
+    <Compile Include="Cmp\ComparableComparer`1.cs" />
+    <Compile Include="Cmp\EquatableEqualityComparer`1.cs" />
+    <Compile Include="Cmp\Int64Comparer.cs" />
+    <Compile Include="Cmp\Int32Comparer.cs" />
+    <Compile Include="Cmp\NullableComparer`2.cs" />
+    <Compile Include="Cmp\NullableEqualityComparer`2.cs" />
+    <Compile Include="Cmp\ReverseComparer`2.cs" />
+    <Compile Include="Cmp\StringComparer.cs" />
+    <Compile Include="Comparers.cs" />
+    <Compile Include="EnumeratorState.cs" />
+    <Compile Include="EqualityComparers.cs" />
+    <Compile Include="Error.cs" />
+    <Compile Include="FuncFunctor`1.cs" />
+    <Compile Include="FuncFunctor`2.cs" />
+    <Compile Include="FuncFunctor`3.cs" />
+    <Compile Include="Grouping`2.cs" />
+    <Compile Include="IArrayBufferer`1.cs" />
+    <Compile Include="IdentityFunctor`1.cs" />
+    <Compile Include="IEnumerable`2.cs" />
+    <Compile Include="IFunctor`1.cs" />
+    <Compile Include="IFunctor`2.cs" />
+    <Compile Include="IFunctor`3.cs" />
+    <Compile Include="Impl\ArrayEnumerator`1.cs" />
+    <Compile Include="Impl\CastEnumerable`2.cs" />
+    <Compile Include="Impl\CastEnumerator`2.cs" />
+    <Compile Include="Impl\Collection`2.cs" />
+    <Compile Include="Impl\ConcatEnumerable`3.cs" />
+    <Compile Include="Impl\ConcatEnumerator`3.cs" />
+    <Compile Include="Impl\DefaultIfEmptyEnumerable`2.cs" />
+    <Compile Include="Impl\DefaultIfEmptyEnumerator`2.cs" />
+    <Compile Include="Impl\DistinctPredicate`2.cs" />
+    <Compile Include="Impl\EmptyEnumerable`1.cs" />
+    <Compile Include="Impl\EmptyEnumerator`1.cs" />
+    <Compile Include="Impl\Enumerable`2.cs" />
+    <Compile Include="Impl\ExceptEnumerable`4.cs" />
+    <Compile Include="Impl\ExceptEnumerator`4.cs" />
+    <Compile Include="Impl\GroupByEnumerable`7.cs" />
+    <Compile Include="Impl\GroupingEnumerator`2.cs" />
+    <Compile Include="Impl\GroupJoinEnumerable`10.cs" />
+    <Compile Include="Impl\GroupJoinEnumerator`10.cs" />
+    <Compile Include="Impl\InlinqArray`1.cs" />
+    <Compile Include="Impl\InlinqCollection1`1.cs" />
+    <Compile Include="Impl\InlinqCollection2`3.cs" />
+    <Compile Include="Impl\InlinqCollection3`4.cs" />
+    <Compile Include="Impl\InlinqDictionaryKeyCollection`2.cs" />
+    <Compile Include="Impl\InlinqDictionaryValueCollection`2.cs" />
+    <Compile Include="Impl\InlinqDictionary`2.cs" />
+    <Compile Include="Impl\InlinqEnumerable1`2.cs" />
+    <Compile Include="Impl\InlinqEnumerable2`3.cs" />
+    <Compile Include="Impl\InlinqEnumerable3`4.cs" />
+    <Compile Include="Impl\InlinqLinkedList`1.cs" />
+    <Compile Include="Impl\InlinqList1`1.cs" />
+    <Compile Include="Impl\InlinqList2`3.cs" />
+    <Compile Include="Impl\InlinqList3`4.cs" />
+    <Compile Include="Impl\InlinqList`1.cs" />
+    <Compile Include="Impl\InlinqQueue`1.cs" />
+    <Compile Include="Impl\InlinqSortedDictionaryKeyCollection`2.cs" />
+    <Compile Include="Impl\InlinqSortedDictionaryValueCollection`2.cs" />
+    <Compile Include="Impl\InlinqSortedDictionary`2.cs" />
+    <Compile Include="Impl\InlinqSortedSet`1.cs" />
+    <Compile Include="Impl\InlinqStack`1.cs" />
+    <Compile Include="Impl\IntersectEnumerable`4.cs" />
+    <Compile Include="Impl\IntersectEnumerator`4.cs" />
+    <Compile Include="Impl\JoinEnumerable`10.cs" />
+    <Compile Include="Impl\JoinEnumerator`10.cs" />
+    <Compile Include="Impl\List`2.cs" />
+    <Compile Include="Impl\NotPredicate`2.cs" />
+    <Compile Include="Impl\OfTypeEnumerable`2.cs" />
+    <Compile Include="Impl\OfTypeEnumerator`2.cs" />
+    <Compile Include="Impl\OrderedEnumerable`3.cs" />
+    <Compile Include="Impl\OrderedEnumerator`3.cs" />
+    <Compile Include="Impl\Range32Enumerable.cs" />
+    <Compile Include="Impl\Range32Enumerator.cs" />
+    <Compile Include="Impl\Range64Enumerable.cs" />
+    <Compile Include="Impl\Range64Enumerator.cs" />
+    <Compile Include="Impl\Repeat32Enumerable.cs" />
+    <Compile Include="Impl\Repeat32Enumerator.cs" />
+    <Compile Include="Impl\Repeat64Enumerable.cs" />
+    <Compile Include="Impl\Repeat64Enumerator.cs" />
+    <Compile Include="Impl\ReverseEnumerable`2.cs" />
+    <Compile Include="Impl\ReverseEnumerator`2.cs" />
+    <Compile Include="Impl\SelectEnumerable`4.cs" />
+    <Compile Include="Impl\SelectEnumerator`4.cs" />
+    <Compile Include="Impl\SelectManyEnumerableA`5.cs" />
+    <Compile Include="Impl\SelectManyEnumerableB`5.cs" />
+    <Compile Include="Impl\SelectManyEnumerableC`4.cs" />
+    <Compile Include="Impl\SelectManyEnumerableD`4.cs" />
+    <Compile Include="Impl\SelectManyEnumerableE`7.cs" />
+    <Compile Include="Impl\SelectManyEnumerableF`7.cs" />
+    <Compile Include="Impl\SelectManyEnumerableG`4.cs" />
+    <Compile Include="Impl\SelectManyEnumerableH`4.cs" />
+    <Compile Include="Impl\SelectManyEnumeratorA`5.cs" />
+    <Compile Include="Impl\SelectManyEnumeratorB`5.cs" />
+    <Compile Include="Impl\SelectManyEnumeratorC`4.cs" />
+    <Compile Include="Impl\SelectManyEnumeratorD`4.cs" />
+    <Compile Include="Impl\SelectManyEnumeratorE`7.cs" />
+    <Compile Include="Impl\SelectManyEnumeratorF`7.cs" />
+    <Compile Include="Impl\SelectManyEnumeratorG`4.cs" />
+    <Compile Include="Impl\SelectManyEnumeratorH`4.cs" />
+    <Compile Include="Impl\SkipEnumerable`2.cs" />
+    <Compile Include="Impl\SkipEnumerator`2.cs" />
+    <Compile Include="Impl\SkipWhileEnumerableA`3.cs" />
+    <Compile Include="Impl\SkipWhileEnumerableB`3.cs" />
+    <Compile Include="Impl\SkipWhileEnumeratorA`2.cs" />
+    <Compile Include="Impl\SkipWhileEnumeratorB`2.cs" />
+    <Compile Include="Impl\TakeEnumerable`2.cs" />
+    <Compile Include="Impl\TakeEnumerator`2.cs" />
+    <Compile Include="Impl\TakeWhileEnumerableA`3.cs" />
+    <Compile Include="Impl\TakeWhileEnumerableB`3.cs" />
+    <Compile Include="Impl\TakeWhileEnumeratorA`3.cs" />
+    <Compile Include="Impl\TakeWhileEnumeratorB`3.cs" />
+    <Compile Include="Impl\WhereEnumerable`3.cs" />
+    <Compile Include="Impl\WhereEnumerator`3.cs" />
+    <Compile Include="Impl\ZipEnumerable`6.cs" />
+    <Compile Include="Impl\ZipEnumerator`6.cs" />
+    <Compile Include="Inlinqer.Buffered.cs" />
+    <Compile Include="Inlinqer.CoreConverters.cs" />
+    <Compile Include="Inlinqer.cs" />
+    <Compile Include="Inlinqer.Decimal.cs" />
+    <Compile Include="Inlinqer.Double.cs" />
+    <Compile Include="Inlinqer.Int32.cs" />
+    <Compile Include="Inlinqer.Int64.cs" />
+    <Compile Include="Inlinqer.Single.cs" />
+    <Compile Include="Inlinqer.SystemConverters.cs" />
+    <Compile Include="IPredicate`1.cs" />
+    <Compile Include="ITFunctor`2.cs" />
+    <Compile Include="ITFunctor`3.cs" />
+    <Compile Include="ITFunctor`4.cs" />
+    <Compile Include="Lookup`3.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Set`2.cs" />
+    <Compile Include="Util.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
