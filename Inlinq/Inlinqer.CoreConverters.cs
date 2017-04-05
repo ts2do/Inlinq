@@ -27,73 +27,35 @@ namespace Inlinq
         public static InlinqEnumerable1<T, IEnumerable<T>> AsInlinq<T>(this IEnumerable<T> source)
             => new InlinqEnumerable1<T, IEnumerable<T>>(source ?? throw Error.ArgumentNull(nameof(source)));
 
-        public static InlinqEnumerable2<T, TEnumerator, FuncFunctor<TEnumerator>> AsInlinq<T, TEnumerator>(this IEnumerable<T> source, Func<TEnumerator> method)
+        public static InlinqEnumerable2<T, TEnumerator> AsInlinq<T, TEnumerator>(this IEnumerable<T> source, Func<TEnumerator> method)
             where TEnumerator : IEnumerator<T>
-            => new InlinqEnumerable2<T, TEnumerator, FuncFunctor<TEnumerator>>(new FuncFunctor<TEnumerator>(method ?? throw Error.ArgumentNull(nameof(method))));
+            => new InlinqEnumerable2<T, TEnumerator>(method ?? throw Error.ArgumentNull(nameof(method)));
 
-        public static InlinqEnumerable2<T, TEnumerator, TMethod> AsInlinq<T, TEnumerator, TMethod>(this IEnumerable<T> source, TMethod method)
+        public static InlinqEnumerable3<T, TEnumerator, IEnumerable<T>> AsInlinq<T, TEnumerator>(this IEnumerable<T> source, Func<IEnumerable<T>, TEnumerator> method)
             where TEnumerator : IEnumerator<T>
-            where TMethod : IFunctor<TEnumerator>
-            => method != null ? new InlinqEnumerable2<T, TEnumerator, TMethod>(method) : throw Error.ArgumentNull(nameof(method));
-
-        public static InlinqEnumerable3<T, TEnumerator, IEnumerable<T>, FuncFunctor<IEnumerable<T>, TEnumerator>> AsInlinq<T, TEnumerator>(this IEnumerable<T> source, Func<IEnumerable<T>, TEnumerator> method)
-            where TEnumerator : IEnumerator<T>
-        {
-            return new InlinqEnumerable3<T, TEnumerator, IEnumerable<T>, FuncFunctor<IEnumerable<T>, TEnumerator>>(
-                source ?? throw Error.ArgumentNull(nameof(source)), new FuncFunctor<IEnumerable<T>, TEnumerator>(method ?? throw Error.ArgumentNull(nameof(method))));
-        }
+            => new InlinqEnumerable3<T, TEnumerator, IEnumerable<T>>(source ?? throw Error.ArgumentNull(nameof(source)), method ?? throw Error.ArgumentNull(nameof(method)));
 
         public static InlinqCollection1<T> AsInlinq<T>(this ICollection<T> source)
             => new InlinqCollection1<T>(source ?? throw Error.ArgumentNull(nameof(source)));
 
-        public static InlinqCollection2<T, TEnumerator, FuncFunctor<TEnumerator>> AsInlinq<T, TEnumerator>(this ICollection<T> source, Func<TEnumerator> method)
+        public static InlinqCollection2<T, TEnumerator> AsInlinq<T, TEnumerator>(this ICollection<T> source, Func<TEnumerator> method)
             where TEnumerator : IEnumerator<T>
-        {
-            return new InlinqCollection2<T, TEnumerator, FuncFunctor<TEnumerator>>(
-                source ?? throw Error.ArgumentNull(nameof(source)), new FuncFunctor<TEnumerator>(method ?? throw Error.ArgumentNull(nameof(method))));
-        }
+            => new InlinqCollection2<T, TEnumerator>(source ?? throw Error.ArgumentNull(nameof(source)), method ?? throw Error.ArgumentNull(nameof(method)));
 
-        public static InlinqCollection2<T, TEnumerator, TMethod> AsInlinq<T, TEnumerator, TMethod>(this ICollection<T> source, TMethod method)
+        public static InlinqCollection3<T, TEnumerator, ICollection<T>> AsInlinq<T, TEnumerator>(this ICollection<T> source, Func<ICollection<T>, TEnumerator> method)
             where TEnumerator : IEnumerator<T>
-            where TMethod : IFunctor<TEnumerator>
-        {
-            if (source == null) throw Error.ArgumentNull(nameof(source));
-            if (method == null) throw Error.ArgumentNull(nameof(method));
-            return new InlinqCollection2<T, TEnumerator, TMethod>(source, method);
-        }
-
-        public static InlinqCollection3<T, TEnumerator, ICollection<T>, FuncFunctor<ICollection<T>, TEnumerator>> AsInlinq<T, TEnumerator>(this ICollection<T> source, Func<ICollection<T>, TEnumerator> method)
-            where TEnumerator : IEnumerator<T>
-        {
-            return new InlinqCollection3<T, TEnumerator, ICollection<T>, FuncFunctor<ICollection<T>, TEnumerator>>(
-                source ?? throw Error.ArgumentNull(nameof(source)), new FuncFunctor<ICollection<T>, TEnumerator>(method ?? throw Error.ArgumentNull(nameof(method))));
-        }
+            => new InlinqCollection3<T, TEnumerator, ICollection<T>>(source ?? throw Error.ArgumentNull(nameof(source)), method ?? throw Error.ArgumentNull(nameof(method)));
 
         public static InlinqList1<T> AsInlinq<T>(this IList<T> source)
             => new InlinqList1<T>(source ?? throw Error.ArgumentNull(nameof(source)));
 
-        public static InlinqList2<T, TEnumerator, FuncFunctor<TEnumerator>> AsInlinq<T, TEnumerator>(this IList<T> source, Func<TEnumerator> method)
+        public static InlinqList2<T, TEnumerator> AsInlinq<T, TEnumerator>(this IList<T> source, Func<TEnumerator> method)
             where TEnumerator : IEnumerator<T>
-        {
-            return new InlinqList2<T, TEnumerator, FuncFunctor<TEnumerator>>(
-                source ?? throw Error.ArgumentNull(nameof(source)), new FuncFunctor<TEnumerator>(method ?? throw Error.ArgumentNull(nameof(method))));
-        }
+            => new InlinqList2<T, TEnumerator>(source ?? throw Error.ArgumentNull(nameof(source)), method ?? throw Error.ArgumentNull(nameof(method)));
 
-        public static InlinqList2<T, TEnumerator, TMethod> AsInlinq<T, TEnumerator, TMethod>(this IList<T> source, TMethod method)
+        public static InlinqList3<T, TEnumerator, IList<T>> AsInlinq<T, TEnumerator>(this IList<T> source, Func<IList<T>, TEnumerator> method)
             where TEnumerator : IEnumerator<T>
-            where TMethod : IFunctor<TEnumerator>
-        {
-            if (source == null) throw Error.ArgumentNull(nameof(source));
-            if (method == null) throw Error.ArgumentNull(nameof(method));
-            return new InlinqList2<T, TEnumerator, TMethod>(source, method);
-        }
-
-        public static InlinqList3<T, TEnumerator, IList<T>, FuncFunctor<IList<T>, TEnumerator>> AsInlinq<T, TEnumerator>(this IList<T> source, Func<IList<T>, TEnumerator> method)
-            where TEnumerator : IEnumerator<T>
-        {
-            return new InlinqList3<T, TEnumerator, IList<T>, FuncFunctor<IList<T>, TEnumerator>>(
-                source ?? throw Error.ArgumentNull(nameof(source)), new FuncFunctor<IList<T>, TEnumerator>(method ?? throw Error.ArgumentNull(nameof(method))));
-        }
+            => new InlinqList3<T, TEnumerator, IList<T>>(source ?? throw Error.ArgumentNull(nameof(source)), method ?? throw Error.ArgumentNull(nameof(method)));
 
         public static InlinqDictionary<TKey, TValue> AsInlinq<TKey, TValue>(this Dictionary<TKey, TValue> source)
             => new InlinqDictionary<TKey, TValue>(source ?? throw Error.ArgumentNull(nameof(source)));

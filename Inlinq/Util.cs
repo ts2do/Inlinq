@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 
 namespace Inlinq
 {
@@ -43,6 +42,13 @@ namespace Inlinq
             T temp = left;
             left = right;
             right = temp;
+        }
+
+        public static Func<T, T> Identity<T>() => _Identity<T>.Instance;
+
+        private static class _Identity<T>
+        {
+            public static readonly Func<T, T> Instance = x => x;
         }
     }
 }

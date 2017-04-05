@@ -1,25 +1,24 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Inlinq.Impl
 {
-    public sealed class SelectManyEnumerableG<TSource, TCollection, TResult, TEnumerator, TCollectionSelector, TResultSelector>
-        : Enumerable<TResult, SelectManyEnumeratorG<TSource, TCollection, TResult, TEnumerator, TCollectionSelector, TResultSelector>>
+    public sealed class SelectManyEnumerableG<TSource, TCollection, TResult, TEnumerator>
+        : Enumerable<TResult, SelectManyEnumeratorG<TSource, TCollection, TResult, TEnumerator>>
         where TEnumerator : IEnumerator<TSource>
-        where TCollectionSelector : IFunctor<TSource, IEnumerable<TCollection>>
-        where TResultSelector : IFunctor<TSource, TCollection, TResult>
     {
         private IEnumerable<TSource, TEnumerator> source;
-        private TCollectionSelector collectionSelector;
-        private TResultSelector resultSelector;
+        private Func<TSource, IEnumerable<TCollection>> collectionSelector;
+        private Func<TSource, TCollection, TResult> resultSelector;
 
-        public SelectManyEnumerableG(IEnumerable<TSource, TEnumerator> source, TCollectionSelector collectionSelector, TResultSelector resultSelector)
+        public SelectManyEnumerableG(IEnumerable<TSource, TEnumerator> source, Func<TSource, IEnumerable<TCollection>> collectionSelector, Func<TSource, TCollection, TResult> resultSelector)
         {
             this.source = source;
             this.collectionSelector = collectionSelector;
             this.resultSelector = resultSelector;
         }
 
-        public override SelectManyEnumeratorG<TSource, TCollection, TResult, TEnumerator, TCollectionSelector, TResultSelector> GetEnumerator()
-            => new SelectManyEnumeratorG<TSource, TCollection, TResult, TEnumerator, TCollectionSelector, TResultSelector>(source.GetEnumerator(), collectionSelector, resultSelector);
+        public override SelectManyEnumeratorG<TSource, TCollection, TResult, TEnumerator> GetEnumerator()
+            => new SelectManyEnumeratorG<TSource, TCollection, TResult, TEnumerator>(source.GetEnumerator(), collectionSelector, resultSelector);
     }
 }

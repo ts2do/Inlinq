@@ -4,22 +4,24 @@ using System.Collections.Generic;
 
 namespace Inlinq.Impl
 {
-    public struct SkipWhileEnumeratorB<T, TEnumerator> : IEnumerator<T>
+    public struct TakeWhileEnumeratorB<T, TEnumerator> : IEnumerator<T>
         where TEnumerator : IEnumerator<T>
     {
         private TEnumerator source;
         private Func<T, int, bool> predicate;
         private EnumeratorState state;
+        private T current;
         private int index;
 
         public T Current
-            => state.IsStarted() ? source.Current : throw Error.EnumerableStateException(state);
+            => state.IsStarted() ? current : throw Error.EnumerableStateException(state);
 
-        public SkipWhileEnumeratorB(TEnumerator source, Func<T, int, bool> predicate)
+        public TakeWhileEnumeratorB(TEnumerator source, Func<T, int, bool> predicate)
         {
             this.source = source;
             this.predicate = predicate;
             state = EnumeratorState.Initial;
+            current = default(T);
             index = -1;
         }
 
@@ -30,7 +32,7 @@ namespace Inlinq.Impl
             switch (state)
             {
                 case EnumeratorState.Started:
-                    if (source.MoveNext())
+                    if (source.MoveNext() && predicate(current = source.Current, checked(++index)))
                         return true;
 
                     state = EnumeratorState.Ended;
@@ -38,12 +40,7 @@ namespace Inlinq.Impl
 
                 case EnumeratorState.Initial:
                     state = EnumeratorState.Started;
-                    while (source.MoveNext())
-                        if (!predicate(source.Current, checked(++index)))
-                            goto case EnumeratorState.Started;
-
-                    state = EnumeratorState.Ended;
-                    break;
+                    goto case EnumeratorState.Started;
 
                 case EnumeratorState.Ended:
                     break;

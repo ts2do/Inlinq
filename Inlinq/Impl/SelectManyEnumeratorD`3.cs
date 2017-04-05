@@ -4,27 +4,23 @@ using System.Collections.Generic;
 
 namespace Inlinq.Impl
 {
-    public struct SelectManyEnumeratorH<TSource, TCollection, TResult, TEnumerator1> : IEnumerator<TResult>
-        where TEnumerator1 : IEnumerator<TSource>
+    public struct SelectManyEnumeratorD<TSource, TResult, TEnumerator> : IEnumerator<TResult>
+        where TEnumerator : IEnumerator<TSource>
     {
-        private TEnumerator1 source;
-        private Func<TSource, int, IEnumerable<TCollection>> collectionSelector;
-        private Func<TSource, TCollection, TResult> resultSelector;
-        private IEnumerator<TCollection> resultEnumerator;
-        private TSource currentSource;
+        private TEnumerator source;
+        private Func<TSource, int, IEnumerable<TResult>> selector;
+        private IEnumerator<TResult> resultEnumerator;
         private EnumeratorState state;
         private int index;
 
         public TResult Current
-            => state.IsStarted() ? resultSelector(currentSource, resultEnumerator.Current) : throw Error.EnumerableStateException(state);
+            => state.IsStarted() ? resultEnumerator.Current : throw Error.EnumerableStateException(state);
 
-        public SelectManyEnumeratorH(TEnumerator1 source, Func<TSource, int, IEnumerable<TCollection>> collectionSelector, Func<TSource, TCollection, TResult> resultSelector)
+        public SelectManyEnumeratorD(TEnumerator source, Func<TSource, int, IEnumerable<TResult>> selector)
         {
             this.source = source;
-            this.collectionSelector = collectionSelector;
-            this.resultSelector = resultSelector;
+            this.selector = selector;
             resultEnumerator = null;
-            currentSource = default(TSource);
             state = EnumeratorState.Initial;
             index = -1;
         }
@@ -40,16 +36,15 @@ namespace Inlinq.Impl
             switch (state)
             {
                 default:
-                    IEnumerator<TCollection> re;
-                    if ((re = resultEnumerator).MoveNext())
+                    if (resultEnumerator.MoveNext())
                         return true;
 
-                    re.Dispose();
+                    resultEnumerator.Dispose();
 
                     while (source.MoveNext())
                     {
                         // keep querying source until a non-empty IEnumerator<> is acquired
-                        var re1 = collectionSelector(currentSource = source.Current, checked(++index));
+                        var re1 = selector(source.Current, checked(++index));
                         if (re1 != null)
                         {
                             var re2 = re1.GetEnumerator();
@@ -74,6 +69,7 @@ namespace Inlinq.Impl
                 case EnumeratorState.Ended:
                     return false;
             }
+
         }
 
         public void Reset()
@@ -84,7 +80,6 @@ namespace Inlinq.Impl
                 resultEnumerator.Dispose();
                 resultEnumerator = null;
             }
-            currentSource = default(TSource);
             state = EnumeratorState.Initial;
             index = -1;
         }

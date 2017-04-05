@@ -4,23 +4,23 @@ using System.Collections.Generic;
 
 namespace Inlinq.Impl
 {
-    public struct SkipWhileEnumeratorB<T, TEnumerator> : IEnumerator<T>
+    public struct WhereEnumerator<T, TEnumerator> : IEnumerator<T>
         where TEnumerator : IEnumerator<T>
     {
         private TEnumerator source;
-        private Func<T, int, bool> predicate;
+        private Func<T, bool> predicate;
         private EnumeratorState state;
-        private int index;
+        private T current;
 
         public T Current
-            => state.IsStarted() ? source.Current : throw Error.EnumerableStateException(state);
+            => state.IsStarted() ? current : throw Error.EnumerableStateException(state);
 
-        public SkipWhileEnumeratorB(TEnumerator source, Func<T, int, bool> predicate)
+        public WhereEnumerator(TEnumerator source, Func<T, bool> predicate)
         {
             this.source = source;
             this.predicate = predicate;
             state = EnumeratorState.Initial;
-            index = -1;
+            current = default(T);
         }
 
         public void Dispose() => source.Dispose();
@@ -30,23 +30,19 @@ namespace Inlinq.Impl
             switch (state)
             {
                 case EnumeratorState.Started:
-                    if (source.MoveNext())
-                        return true;
-
-                    state = EnumeratorState.Ended;
-                    break;
-
-                case EnumeratorState.Initial:
-                    state = EnumeratorState.Started;
                     while (source.MoveNext())
-                        if (!predicate(source.Current, checked(++index)))
-                            goto case EnumeratorState.Started;
+                        if (predicate(current = source.Current))
+                            return true;
 
                     state = EnumeratorState.Ended;
                     break;
 
                 case EnumeratorState.Ended:
                     break;
+
+                case EnumeratorState.Initial:
+                    state = EnumeratorState.Started;
+                    goto case EnumeratorState.Started;
             }
 
             return false;
@@ -56,7 +52,6 @@ namespace Inlinq.Impl
         {
             source.Reset();
             state = EnumeratorState.Initial;
-            index = -1;
         }
 
         object IEnumerator.Current => Current;

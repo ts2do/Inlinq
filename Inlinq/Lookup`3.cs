@@ -1,4 +1,5 @@
 ﻿using Inlinq.Impl;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,23 +15,20 @@ namespace Inlinq
         private int capacity;
         private Grouping<TKey, TElement> emptyGrouping;
 
-        internal static Lookup<TKey, TElement, TEqualityComparer> Create<TSource, TKeySelector, TElementSelector>(IEnumerable<TSource> source, TKeySelector keySelector, TElementSelector elementSelector, TEqualityComparer comparer)
-            where TKeySelector : IFunctor<TSource, TKey>
-            where TElementSelector : IFunctor<TSource, TElement>
+        internal static Lookup<TKey, TElement, TEqualityComparer> Create<TSource>(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, TEqualityComparer comparer)
         {
             var lookup = new Lookup<TKey, TElement, TEqualityComparer>(comparer);
             foreach (TSource item in source)
-                lookup.FindCreateGrouping(keySelector.Invoke(item)).Add(elementSelector.Invoke(item));
+                lookup.FindCreateGrouping(keySelector(item)).Add(elementSelector(item));
             return lookup;
         }
 
-        internal static Lookup<TKey, TElement, TEqualityComparer> CreateForJoin<TFunc>(IEnumerable<TElement> source, TFunc keySelector, TEqualityComparer comparer)
-            where TFunc : IFunctor<TElement, TKey>
+        internal static Lookup<TKey, TElement, TEqualityComparer> CreateForJoin(IEnumerable<TElement> source, Func<TElement, TKey> keySelector, TEqualityComparer comparer)
         {
             var lookup = new Lookup<TKey, TElement, TEqualityComparer>(comparer);
             foreach (TElement item in source)
             {
-                TKey key = keySelector.Invoke(item);
+                TKey key = keySelector(item);
                 if (key != null)
                     lookup.FindCreateGrouping(key).Add(item);
             }

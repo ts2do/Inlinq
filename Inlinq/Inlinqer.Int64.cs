@@ -19,7 +19,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, long, TEnumerator, FuncFunctor<TSource, long>>(source.GetEnumerator(), new FuncFunctor<TSource, long>(selector)))
+            using (var e = new SelectEnumerator<TSource, long, TEnumerator>(source.GetEnumerator(), selector))
                 return Average_Int64(e);
         }
 
@@ -35,7 +35,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, long?, TEnumerator, FuncFunctor<TSource, long?>>(source.GetEnumerator(), new FuncFunctor<TSource, long?>(selector)))
+            using (var e = new SelectEnumerator<TSource, long?, TEnumerator>(source.GetEnumerator(), selector))
                 return Average_NullableOfInt64(e);
         }
 
@@ -98,7 +98,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, long, TEnumerator, FuncFunctor<TSource, long>>(source.GetEnumerator(), new FuncFunctor<TSource, long>(selector)))
+            using (var e = new SelectEnumerator<TSource, long, TEnumerator>(source.GetEnumerator(), selector))
                 return Max_Int64(e);
         }
 
@@ -114,7 +114,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, long?, TEnumerator, FuncFunctor<TSource, long?>>(source.GetEnumerator(), new FuncFunctor<TSource, long?>(selector)))
+            using (var e = new SelectEnumerator<TSource, long?, TEnumerator>(source.GetEnumerator(), selector))
                 return Max_NullableOfInt64(e);
         }
 
@@ -167,7 +167,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, long, TEnumerator, FuncFunctor<TSource, long>>(source.GetEnumerator(), new FuncFunctor<TSource, long>(selector)))
+            using (var e = new SelectEnumerator<TSource, long, TEnumerator>(source.GetEnumerator(), selector))
                 return Min_Int64(e);
         }
 
@@ -183,7 +183,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, long?, TEnumerator, FuncFunctor<TSource, long?>>(source.GetEnumerator(), new FuncFunctor<TSource, long?>(selector)))
+            using (var e = new SelectEnumerator<TSource, long?, TEnumerator>(source.GetEnumerator(), selector))
                 return Min_NullableOfInt64(e);
         }
 
@@ -236,7 +236,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, long, TEnumerator, FuncFunctor<TSource, long>>(source.GetEnumerator(), new FuncFunctor<TSource, long>(selector)))
+            using (var e = new SelectEnumerator<TSource, long, TEnumerator>(source.GetEnumerator(), selector))
                 return Sum_Int64(e);
         }
 
@@ -252,7 +252,7 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (selector == null) throw Error.ArgumentNull(nameof(selector));
-            using (var e = new SelectEnumerator<TSource, long?, TEnumerator, FuncFunctor<TSource, long?>>(source.GetEnumerator(), new FuncFunctor<TSource, long?>(selector)))
+            using (var e = new SelectEnumerator<TSource, long?, TEnumerator>(source.GetEnumerator(), selector))
                 return Sum_NullableOfInt64(e);
         }
 

@@ -1,19 +1,19 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Inlinq.Impl
 {
-    public struct SelectEnumerator<TSource, TResult, TEnumerator, TSelector> : IEnumerator<TResult>
+    public struct SelectEnumerator<TSource, TResult, TEnumerator> : IEnumerator<TResult>
         where TEnumerator : IEnumerator<TSource>
-        where TSelector : IFunctor<TSource, TResult>
     {
         private TEnumerator source;
-        private TSelector selector;
+        private Func<TSource, TResult> selector;
 
         public TResult Current
-            => selector.Invoke(source.Current);
+            => selector(source.Current);
         
-        public SelectEnumerator(TEnumerator source, TSelector selector)
+        public SelectEnumerator(TEnumerator source, Func<TSource, TResult> selector)
         {
             this.source = source;
             this.selector = selector;

@@ -1,20 +1,20 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Inlinq.Impl
 {
-    public struct SkipWhileEnumeratorA<T, TEnumerator, TPredicate> : IEnumerator<T>
+    public struct SkipWhileEnumeratorA<T, TEnumerator> : IEnumerator<T>
         where TEnumerator : IEnumerator<T>
-        where TPredicate : IFunctor<T, bool>
     {
         private TEnumerator source;
-        private TPredicate predicate;
+        private Func<T, bool> predicate;
         private EnumeratorState state;
 
         public T Current
             => state.IsStarted() ? source.Current : throw Error.EnumerableStateException(state);
 
-        public SkipWhileEnumeratorA(TEnumerator source, TPredicate predicate)
+        public SkipWhileEnumeratorA(TEnumerator source, Func<T, bool> predicate)
         {
             this.source = source;
             this.predicate = predicate;
@@ -37,7 +37,7 @@ namespace Inlinq.Impl
                 case EnumeratorState.Initial:
                     state = EnumeratorState.Started;
                     while (source.MoveNext())
-                        if (!predicate.Invoke(source.Current))
+                        if (!predicate(source.Current))
                             goto case EnumeratorState.Started;
 
                     state = EnumeratorState.Ended;
