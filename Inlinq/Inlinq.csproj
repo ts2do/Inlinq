@@ -77,19 +77,31 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ArrayBuffer`2.cs" />
-    <Compile Include="Cmp\ChainedComparer`3.cs" />
+    <Compile Include="Cmp\CompositeComparer`3.cs" />
+    <Compile Include="Cmp\DefaultEqualityComparer`1.cs" />
+    <Compile Include="Cmp\DefaultComparer`1.cs" />
     <Compile Include="Cmp\ComparableComparer`1.cs" />
     <Compile Include="Cmp\EquatableEqualityComparer`1.cs" />
+    <Compile Include="Cmp\DoubleComparer.cs" />
+    <Compile Include="Cmp\SingleComparer.cs" />
+    <Compile Include="Cmp\CharComparer.cs" />
+    <Compile Include="Cmp\UInt8Comparer.cs" />
+    <Compile Include="Cmp\Int8Comparer.cs" />
+    <Compile Include="Cmp\UInt16Comparer.cs" />
+    <Compile Include="Cmp\Int16Comparer.cs" />
+    <Compile Include="Cmp\UInt64Comparer.cs" />
+    <Compile Include="Cmp\UInt32Comparer.cs" />
     <Compile Include="Cmp\Int64Comparer.cs" />
     <Compile Include="Cmp\Int32Comparer.cs" />
-    <Compile Include="Cmp\NullableComparer`2.cs" />
-    <Compile Include="Cmp\NullableEqualityComparer`2.cs" />
+    <Compile Include="Cmp\NullableComparer`1.cs" />
+    <Compile Include="Cmp\NullableEqualityComparer`1.cs" />
     <Compile Include="Cmp\ReverseComparer`2.cs" />
     <Compile Include="Cmp\StringComparer.cs" />
+    <Compile Include="CompositeKey`2.cs" />
     <Compile Include="EnumeratorState.cs" />
     <Compile Include="Error.cs" />
     <Compile Include="Grouping`2.cs" />
-    <Compile Include="IArrayBufferer`1.cs" />
+    <Compile Include="IEnumerable`4.cs" />
     <Compile Include="IEnumerable`2.cs" />
     <Compile Include="Impl\ArrayEnumerator`1.cs" />
     <Compile Include="Impl\CastEnumerable`2.cs" />

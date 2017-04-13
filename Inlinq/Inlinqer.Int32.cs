@@ -42,18 +42,21 @@ namespace Inlinq
         private static double Average_Int32<TEnumerator>(TEnumerator source)
             where TEnumerator : IEnumerator<int>
         {
-            if (!source.MoveNext()) throw Error.NoElements();
-            long sum = source.Current;
-            long count = 1;
-            checked
+            if (source.MoveNext())
             {
-                while (source.MoveNext())
+                long sum = source.Current;
+                long count = 1;
+                checked
                 {
-                    sum += source.Current;
-                    ++count;
+                    while (source.MoveNext())
+                    {
+                        sum += source.Current;
+                        ++count;
+                    }
                 }
+                return (double)sum / count;
             }
-            return (double)sum / count;
+            throw Error.NoElements();
         }
 
         private static double? Average_NullableOfInt32<TEnumerator>(TEnumerator source)
@@ -121,15 +124,18 @@ namespace Inlinq
         private static int Max_Int32<TEnumerator>(TEnumerator source)
             where TEnumerator : IEnumerator<int>
         {
-            if (!source.MoveNext()) throw Error.NoElements();
-            int max = source.Current;
-            while (source.MoveNext())
+            if (source.MoveNext())
             {
-                var element = source.Current;
-                if (max < element)
-                    max = element;
+                int max = source.Current;
+                while (source.MoveNext())
+                {
+                    var element = source.Current;
+                    if (max < element)
+                        max = element;
+                }
+                return max;
             }
-            return max;
+            throw Error.NoElements();
         }
 
         private static int? Max_NullableOfInt32<TEnumerator>(TEnumerator source)
@@ -190,15 +196,18 @@ namespace Inlinq
         private static int Min_Int32<TEnumerator>(TEnumerator source)
             where TEnumerator : IEnumerator<int>
         {
-            if (!source.MoveNext()) throw Error.NoElements();
-            int min = source.Current;
-            while (source.MoveNext())
+            if (source.MoveNext())
             {
-                var element = source.Current;
-                if (min > element)
-                    min = element;
+                int min = source.Current;
+                while (source.MoveNext())
+                {
+                    var element = source.Current;
+                    if (min > element)
+                        min = element;
+                }
+                return min;
             }
-            return min;
+            throw Error.NoElements();
         }
 
         private static int? Min_NullableOfInt32<TEnumerator>(TEnumerator source)
@@ -259,14 +268,17 @@ namespace Inlinq
         private static int Sum_Int32<TEnumerator>(TEnumerator source)
             where TEnumerator : IEnumerator<int>
         {
-            if (!source.MoveNext()) throw Error.NoElements();
-            int sum = source.Current;
-            checked
+            if (source.MoveNext())
             {
-                while (source.MoveNext())
-                    sum += source.Current;
+                int sum = source.Current;
+                checked
+                {
+                    while (source.MoveNext())
+                        sum += source.Current;
+                }
+                return sum;
             }
-            return sum;
+            throw Error.NoElements();
         }
 
         private static int? Sum_NullableOfInt32<TEnumerator>(TEnumerator source)

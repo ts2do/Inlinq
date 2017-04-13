@@ -42,18 +42,21 @@ namespace Inlinq
         private static double Average_Double<TEnumerator>(TEnumerator source)
             where TEnumerator : IEnumerator<double>
         {
-            if (!source.MoveNext()) throw Error.NoElements();
-            double sum = source.Current;
-            long count = 1;
-            checked
+            if (source.MoveNext())
             {
-                while (source.MoveNext())
+                double sum = source.Current;
+                long count = 1;
+                checked
                 {
-                    sum += source.Current;
-                    ++count;
+                    while (source.MoveNext())
+                    {
+                        sum += source.Current;
+                        ++count;
+                    }
                 }
+                return sum / count;
             }
-            return sum / count;
+            throw Error.NoElements();
         }
 
         private static double? Average_NullableOfDouble<TEnumerator>(TEnumerator source)
@@ -121,15 +124,18 @@ namespace Inlinq
         private static double Max_Double<TEnumerator>(TEnumerator source)
             where TEnumerator : IEnumerator<double>
         {
-            if (!source.MoveNext()) throw Error.NoElements();
-            double max = source.Current;
-            while (source.MoveNext())
+            if (source.MoveNext())
             {
-                var element = source.Current;
-                if (!(max >= element))
-                    max = element;
+                double max = source.Current;
+                while (source.MoveNext())
+                {
+                    var element = source.Current;
+                    if (!(max >= element))
+                        max = element;
+                }
+                return max;
             }
-            return max;
+            throw Error.NoElements();
         }
 
         private static double? Max_NullableOfDouble<TEnumerator>(TEnumerator source)
@@ -190,15 +196,18 @@ namespace Inlinq
         private static double Min_Double<TEnumerator>(TEnumerator source)
             where TEnumerator : IEnumerator<double>
         {
-            if (!source.MoveNext()) throw Error.NoElements();
-            double min = source.Current;
-            while (source.MoveNext())
+            if (source.MoveNext())
             {
-                var element = source.Current;
-                if (!(min <= element))
-                    min = element;
+                double min = source.Current;
+                while (source.MoveNext())
+                {
+                    var element = source.Current;
+                    if (!(min <= element))
+                        min = element;
+                }
+                return min;
             }
-            return min;
+            throw Error.NoElements();
         }
 
         private static double? Min_NullableOfDouble<TEnumerator>(TEnumerator source)
@@ -259,14 +268,17 @@ namespace Inlinq
         private static double Sum_Double<TEnumerator>(TEnumerator source)
             where TEnumerator : IEnumerator<double>
         {
-            if (!source.MoveNext()) throw Error.NoElements();
-            double sum = source.Current;
-            checked
+            if (source.MoveNext())
             {
-                while (source.MoveNext())
-                    sum += source.Current;
+                double sum = source.Current;
+                checked
+                {
+                    while (source.MoveNext())
+                        sum += source.Current;
+                }
+                return sum;
             }
-            return sum;
+            throw Error.NoElements();
         }
 
         private static double? Sum_NullableOfDouble<TEnumerator>(TEnumerator source)

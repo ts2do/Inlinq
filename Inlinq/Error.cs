@@ -21,7 +21,7 @@ namespace Inlinq
         public static Exception NoElements() => new InvalidOperationException("Sequence contains no elements");
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public static Exception NoMatch() => new InvalidOperationException("Sequence contains no matching element");
+        public static Exception NoMatches() => new InvalidOperationException("Sequence contains no matching element");
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static Exception NotSupported() => new NotSupportedException();

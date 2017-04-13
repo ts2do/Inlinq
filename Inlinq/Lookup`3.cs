@@ -18,7 +18,7 @@ namespace Inlinq
         internal static Lookup<TKey, TElement, TEqualityComparer> Create<TSource>(IEnumerable<TSource> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, TEqualityComparer comparer)
         {
             var lookup = new Lookup<TKey, TElement, TEqualityComparer>(comparer);
-            foreach (TSource item in source)
+            foreach (var item in source)
                 lookup.FindCreateGrouping(keySelector(item)).Add(elementSelector(item));
             return lookup;
         }
@@ -26,9 +26,9 @@ namespace Inlinq
         internal static Lookup<TKey, TElement, TEqualityComparer> CreateForJoin(IEnumerable<TElement> source, Func<TElement, TKey> keySelector, TEqualityComparer comparer)
         {
             var lookup = new Lookup<TKey, TElement, TEqualityComparer>(comparer);
-            foreach (TElement item in source)
+            foreach (var item in source)
             {
-                TKey key = keySelector(item);
+                var key = keySelector(item);
                 if (key != null)
                     lookup.FindCreateGrouping(key).Add(item);
             }
@@ -49,7 +49,7 @@ namespace Inlinq
             get
             {
                 int hashCode = GetHashCode(key);
-                for (Grouping<TKey, TElement> g = groupings[hashCode % capacity]; g != null; g = g.hashNext)
+                for (var g = groupings[hashCode % capacity]; g != null; g = g.hashNext)
                     if (g.hashCode == hashCode && comparer.Equals(g.key, key))
                         return g;
                 return emptyGrouping ?? (emptyGrouping = new Grouping<TKey, TElement>());
@@ -59,7 +59,7 @@ namespace Inlinq
         public bool Contains(TKey key)
         {
             int hashCode = GetHashCode(key);
-            for (Grouping<TKey, TElement> g = groupings[hashCode % capacity]; g != null; g = g.hashNext)
+            for (var g = groupings[hashCode % capacity]; g != null; g = g.hashNext)
                 if (g.hashCode == hashCode && comparer.Equals(g.key, key))
                     return true;
             return false;
@@ -86,7 +86,7 @@ namespace Inlinq
 
             if (count == capacity) Resize();
             int index = hashCode % capacity;
-            ref Grouping<TKey, TElement> listRef = ref groupings[index];
+            ref var listRef = ref groupings[index];
             g = new Grouping<TKey, TElement>
             {
                 key = key,
@@ -113,11 +113,11 @@ namespace Inlinq
         {
             int newCapacity = checked(count * 2 + 1);
             var newGroupings = new Grouping<TKey, TElement>[newCapacity];
-            Grouping<TKey, TElement> g = lastGrouping;
+            var g = lastGrouping;
             do
             {
                 g = g.next;
-                ref Grouping<TKey, TElement> listRef = ref newGroupings[g.hashCode % newCapacity];
+                ref var listRef = ref newGroupings[g.hashCode % newCapacity];
                 g.hashNext = listRef;
                 listRef = g;
             } while (g != lastGrouping);

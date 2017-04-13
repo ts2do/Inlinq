@@ -11,6 +11,10 @@ namespace Inlinq.Impl
         private Func<T, TKey> keySelector;
         private TComparer comparer;
 
+        public IEnumerable<T, TEnumerator> Source => source;
+        public Func<T, TKey> KeySelector => keySelector;
+        public TComparer Comparer => comparer;
+
         public OrderedEnumerable(IEnumerable<T, TEnumerator> source, Func<T, TKey> keySelector, TComparer comparer)
         {
             this.source = source;

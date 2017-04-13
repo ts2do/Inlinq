@@ -42,18 +42,21 @@ namespace Inlinq
         private static float Average_Single<TEnumerator>(TEnumerator source)
             where TEnumerator : IEnumerator<float>
         {
-            if (!source.MoveNext()) throw Error.NoElements();
-            double sum = source.Current;
-            long count = 1;
-            checked
+            if (source.MoveNext())
             {
-                while (source.MoveNext())
+                double sum = source.Current;
+                long count = 1;
+                checked
                 {
-                    sum += source.Current;
-                    ++count;
+                    while (source.MoveNext())
+                    {
+                        sum += source.Current;
+                        ++count;
+                    }
                 }
+                return (float)(sum / count);
             }
-            return (float)(sum / count);
+            throw Error.NoElements();
         }
 
         private static float? Average_NullableOfSingle<TEnumerator>(TEnumerator source)
@@ -121,15 +124,18 @@ namespace Inlinq
         private static float Max_Single<TEnumerator>(TEnumerator source)
             where TEnumerator : IEnumerator<float>
         {
-            if (!source.MoveNext()) throw Error.NoElements();
-            float max = source.Current;
-            while (source.MoveNext())
+            if (source.MoveNext())
             {
-                var element = source.Current;
-                if (!(max >= element))
-                    max = element;
+                float max = source.Current;
+                while (source.MoveNext())
+                {
+                    var element = source.Current;
+                    if (!(max >= element))
+                        max = element;
+                }
+                return max;
             }
-            return max;
+            throw Error.NoElements();
         }
 
         private static float? Max_NullableOfSingle<TEnumerator>(TEnumerator source)
@@ -190,15 +196,18 @@ namespace Inlinq
         private static float Min_Single<TEnumerator>(TEnumerator source)
             where TEnumerator : IEnumerator<float>
         {
-            if (!source.MoveNext()) throw Error.NoElements();
-            float min = source.Current;
-            while (source.MoveNext())
+            if (source.MoveNext())
             {
-                var element = source.Current;
-                if (!(min <= element))
-                    min = element;
+                float min = source.Current;
+                while (source.MoveNext())
+                {
+                    var element = source.Current;
+                    if (!(min <= element))
+                        min = element;
+                }
+                return min;
             }
-            return min;
+            throw Error.NoElements();
         }
 
         private static float? Min_NullableOfSingle<TEnumerator>(TEnumerator source)
@@ -259,14 +268,17 @@ namespace Inlinq
         private static float Sum_Single<TEnumerator>(TEnumerator source)
             where TEnumerator : IEnumerator<float>
         {
-            if (!source.MoveNext()) throw Error.NoElements();
-            double sum = source.Current;
-            checked
+            if (source.MoveNext())
             {
-                while (source.MoveNext())
-                    sum += source.Current;
+                double sum = source.Current;
+                checked
+                {
+                    while (source.MoveNext())
+                        sum += source.Current;
+                }
+                return (float)sum;
             }
-            return (float)sum;
+            throw Error.NoElements();
         }
 
         private static float? Sum_NullableOfSingle<TEnumerator>(TEnumerator source)

@@ -44,9 +44,9 @@ namespace Inlinq
             right = temp;
         }
 
-        public static Func<T, T> Identity<T>() => _Identity<T>.Instance;
+        public static Func<T, T> Identity<T>() => IdentityCache<T>.Instance;
 
-        private static class _Identity<T>
+        private static class IdentityCache<T>
         {
             public static readonly Func<T, T> Instance = x => x;
         }

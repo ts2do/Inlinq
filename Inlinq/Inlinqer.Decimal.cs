@@ -42,18 +42,21 @@ namespace Inlinq
         private static decimal Average_Decimal<TEnumerator>(TEnumerator source)
             where TEnumerator : IEnumerator<decimal>
         {
-            if (!source.MoveNext()) throw Error.NoElements();
-            decimal sum = source.Current;
-            long count = 1;
-            checked
+            if (source.MoveNext())
             {
-                while (source.MoveNext())
+                decimal sum = source.Current;
+                long count = 1;
+                checked
                 {
-                    sum += source.Current;
-                    ++count;
+                    while (source.MoveNext())
+                    {
+                        sum += source.Current;
+                        ++count;
+                    }
                 }
+                return sum / count;
             }
-            return sum / count;
+            throw Error.NoElements();
         }
 
         private static decimal? Average_NullableOfDecimal<TEnumerator>(TEnumerator source)
@@ -121,15 +124,18 @@ namespace Inlinq
         private static decimal Max_Decimal<TEnumerator>(TEnumerator source)
             where TEnumerator : IEnumerator<decimal>
         {
-            if (!source.MoveNext()) throw Error.NoElements();
-            decimal max = source.Current;
-            while (source.MoveNext())
+            if (source.MoveNext())
             {
-                var element = source.Current;
-                if (max < element)
-                    max = element;
+                decimal max = source.Current;
+                while (source.MoveNext())
+                {
+                    var element = source.Current;
+                    if (max < element)
+                        max = element;
+                }
+                return max;
             }
-            return max;
+            throw Error.NoElements();
         }
 
         private static decimal? Max_NullableOfDecimal<TEnumerator>(TEnumerator source)
@@ -190,15 +196,18 @@ namespace Inlinq
         private static decimal Min_Decimal<TEnumerator>(TEnumerator source)
             where TEnumerator : IEnumerator<decimal>
         {
-            if (!source.MoveNext()) throw Error.NoElements();
-            decimal min = source.Current;
-            while (source.MoveNext())
+            if (source.MoveNext())
             {
-                var element = source.Current;
-                if (min > element)
-                    min = element;
+                decimal min = source.Current;
+                while (source.MoveNext())
+                {
+                    var element = source.Current;
+                    if (min > element)
+                        min = element;
+                }
+                return min;
             }
-            return min;
+            throw Error.NoElements();
         }
 
         private static decimal? Min_NullableOfDecimal<TEnumerator>(TEnumerator source)
@@ -259,14 +268,17 @@ namespace Inlinq
         private static decimal Sum_Decimal<TEnumerator>(TEnumerator source)
             where TEnumerator : IEnumerator<decimal>
         {
-            if (!source.MoveNext()) throw Error.NoElements();
-            decimal sum = source.Current;
-            checked
+            if (source.MoveNext())
             {
-                while (source.MoveNext())
-                    sum += source.Current;
+                decimal sum = source.Current;
+                checked
+                {
+                    while (source.MoveNext())
+                        sum += source.Current;
+                }
+                return sum;
             }
-            return sum;
+            throw Error.NoElements();
         }
 
         private static decimal? Sum_NullableOfDecimal<TEnumerator>(TEnumerator source)

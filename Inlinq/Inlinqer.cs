@@ -16,34 +16,37 @@ namespace Inlinq
             if (func == null) throw Error.ArgumentNull(nameof(func));
             using (var e = source.GetEnumerator())
             {
-                if (!e.MoveNext()) throw Error.NoElements();
-                var result = e.Current;
-                while (e.MoveNext())
-                    result = func(result, e.Current);
-                return result;
+                if (e.MoveNext())
+                {
+                    var result = e.Current;
+                    while (e.MoveNext())
+                        result = func(result, e.Current);
+                    return result;
+                }
+                throw Error.NoElements();
             }
         }
 
         public static TAccumulate Aggregate<TSource, TAccumulate, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func)
             where TEnumerator : IEnumerator<TSource>
-        {
-            if (source == null) throw Error.ArgumentNull(nameof(source));
-            if (func == null) throw Error.ArgumentNull(nameof(func));
-            foreach (var element in source)
-                seed = func(seed, element);
-            return seed;
-        }
+            => AggregateImpl(source ?? throw Error.ArgumentNull(nameof(source)), seed, func ?? throw Error.ArgumentNull(nameof(func)));
 
-        public static TResult Aggregate<TSource, TEnumerator, TAccumulate, TResult>(this IEnumerable<TSource, TEnumerator> source, TAccumulate seed,
-            Func<TAccumulate, TSource, TAccumulate> func, Func<TAccumulate, TResult> resultSelector)
+        public static TResult Aggregate<TSource, TEnumerator, TAccumulate, TResult>(this IEnumerable<TSource, TEnumerator> source, TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func, Func<TAccumulate, TResult> resultSelector)
             where TEnumerator : IEnumerator<TSource>
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (func == null) throw Error.ArgumentNull(nameof(func));
             if (resultSelector == null) throw Error.ArgumentNull(nameof(resultSelector));
-            foreach (var element in source)
-                seed = func(seed, element);
-            return resultSelector(seed);
+            return resultSelector(AggregateImpl(source, seed, func));
+        }
+
+        private static TAccumulate AggregateImpl<TSource, TAccumulate, TEnumerator>(IEnumerable<TSource, TEnumerator> source, TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func)
+            where TEnumerator : IEnumerator<TSource>
+        {
+            using (var e = source.GetEnumerator())
+                while (e.MoveNext())
+                    seed = func(seed, e.Current);
+            return seed;
         }
         #endregion
 
@@ -53,9 +56,10 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (predicate == null) throw Error.ArgumentNull(nameof(predicate));
-            foreach (var element in source)
-                if (!predicate(element))
-                    return false;
+            using (var e = source.GetEnumerator())
+                while (e.MoveNext())
+                    if (!predicate(e.Current))
+                        return false;
             return true;
         }
         #endregion
@@ -73,9 +77,10 @@ namespace Inlinq
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (predicate == null) throw Error.ArgumentNull(nameof(predicate));
-            foreach (var element in source)
-                if (predicate(element))
-                    return true;
+            using (var e = source.GetEnumerator())
+                while (e.MoveNext())
+                    if (predicate(e.Current))
+                        return true;
             return false;
         }
         #endregion
@@ -86,23 +91,25 @@ namespace Inlinq
         #endregion
 
         #region Concat
-        public static ConcatEnumerable<TSource, TEnumerator1, TEnumerator2>
-            Concat<TSource, TEnumerator1, TEnumerator2>(this IEnumerable<TSource, TEnumerator1> first, IEnumerable<TSource, TEnumerator2> second)
+        public static ConcatEnumerable<TSource, TEnumerator1, TEnumerator2> Concat<TSource, TEnumerator1, TEnumerator2>(this IEnumerable<TSource, TEnumerator1> first, IEnumerable<TSource, TEnumerator2> second)
             where TEnumerator1 : IEnumerator<TSource>
             where TEnumerator2 : IEnumerator<TSource>
-        {
-            return new ConcatEnumerable<TSource, TEnumerator1, TEnumerator2>(first ?? throw Error.ArgumentNull(nameof(first)), second ?? throw Error.ArgumentNull(nameof(second)));
-        }
+            => ConcatImpl(first ?? throw Error.ArgumentNull(nameof(first)), second ?? throw Error.ArgumentNull(nameof(second)));
+
+        private static ConcatEnumerable<TSource, TEnumerator1, TEnumerator2> ConcatImpl<TSource, TEnumerator1, TEnumerator2>(IEnumerable<TSource, TEnumerator1> first, IEnumerable<TSource, TEnumerator2> second)
+            where TEnumerator1 : IEnumerator<TSource>
+            where TEnumerator2 : IEnumerator<TSource>
+            => new ConcatEnumerable<TSource, TEnumerator1, TEnumerator2>(first, second);
         #endregion
 
         #region Count
         public static int Count<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source)
             where TEnumerator : IEnumerator<TSource>
         {
-            if (source.GetCount(out int count))
+            if ((source ?? throw Error.ArgumentNull(nameof(source))).GetCount(out int count))
                 return count;
 
-            using (var e = (source ?? throw Error.ArgumentNull(nameof(source))).GetEnumerator())
+            using (var e = source.GetEnumerator())
             {
                 count = 0;
                 checked
@@ -120,79 +127,58 @@ namespace Inlinq
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (predicate == null) throw Error.ArgumentNull(nameof(predicate));
             int count = 0;
-            foreach (var element in source)
-            {
-                if (predicate(element))
-                    count = checked(count + 1);
-
-            }
+            using (var e = source.GetEnumerator())
+                while (e.MoveNext())
+                    if (predicate(e.Current))
+                        count = checked(count + 1);
             return count;
         }
         #endregion
 
         #region DefaultIfEmpty
         public static DefaultIfEmptyEnumerable<TSource, TEnumerator> DefaultIfEmpty<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source)
-                where TEnumerator : IEnumerator<TSource>
-        {
-            return new DefaultIfEmptyEnumerable<TSource, TEnumerator>(source ?? throw Error.ArgumentNull(nameof(source)), default(TSource));
-        }
+            where TEnumerator : IEnumerator<TSource>
+            => DefaultIfEmpty(source, default(TSource));
 
         public static DefaultIfEmptyEnumerable<TSource, TEnumerator> DefaultIfEmpty<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, TSource defaultValue)
             where TEnumerator : IEnumerator<TSource>
-        {
-            return new DefaultIfEmptyEnumerable<TSource, TEnumerator>(source ?? throw Error.ArgumentNull(nameof(source)), defaultValue);
-        }
+            => new DefaultIfEmptyEnumerable<TSource, TEnumerator>(source ?? throw Error.ArgumentNull(nameof(source)), defaultValue);
         #endregion
 
         #region ElementAt
         public static TSource ElementAt<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, int index)
             where TEnumerator : IEnumerator<TSource>
-        {
-            if (source == null) throw Error.ArgumentNull(nameof(source));
-            if (index < 0) throw Error.ArgumentOutOfRange(nameof(index));
-            if (source is IList<TSource> list)
-                return list[index];
-
-            if (!(source is ICollection<TSource> collection1) || collection1.Count > index)
-            {
-                if (!(source is ICollection collection2) || collection2.Count > index)
-                {
-                    using (var e = source.GetEnumerator())
-                    {
-                        for (; index >= 0; --index)
-                            if (!e.MoveNext())
-                                break;
-                        return e.Current;
-                    }
-                }
-            }
-            throw Error.ArgumentOutOfRange(nameof(index));
-        }
+            => ElementAtImpl(source ?? throw Error.ArgumentNull(nameof(source)), index >= 0 ? index : throw Error.ArgumentOutOfRange(nameof(index)), out var element) ? element : throw Error.ArgumentOutOfRange(nameof(index));
         #endregion
 
         #region ElementAtOrDefault
         public static TSource ElementAtOrDefault<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, int index)
             where TEnumerator : IEnumerator<TSource>
-        {
-            if (source == null) throw Error.ArgumentNull(nameof(source));
-            if (index < 0) throw Error.ArgumentOutOfRange(nameof(index));
-            if (source is IList<TSource> list)
-                return list[index];
+            => ElementAtImpl(source ?? throw Error.ArgumentNull(nameof(source)), index >= 0 ? index : throw Error.ArgumentOutOfRange(nameof(index)), out var element) ? element : default(TSource);
 
-            if (!(source is ICollection<TSource> collection1) || collection1.Count > index)
+        private static bool ElementAtImpl<TSource, TEnumerator>(IEnumerable<TSource, TEnumerator> source, int index, out TSource element)
+            where TEnumerator : IEnumerator<TSource>
+        {
+            if (!source.GetCount(out int count) || count > index)
             {
-                if (!(source is ICollection collection2) || collection2.Count > index)
+                if (source is IList<TSource> list)
                 {
-                    using (var e = source.GetEnumerator())
-                    {
-                        for (; index >= 0; --index)
-                            if (!e.MoveNext())
-                                break;
-                        return e.Current;
-                    }
+                    element = list[index];
+                    return true;
+                }
+
+                using (var e = source.GetEnumerator())
+                {
+                    for (; index >= 0; --index)
+                        if (!e.MoveNext())
+                            break;
+                    element = e.Current;
+                    return true;
                 }
             }
-            return default(TSource);
+            
+            element = default(TSource);
+            return false;
         }
         #endregion
 
@@ -204,186 +190,138 @@ namespace Inlinq
         #region First
         public static TSource First<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source)
             where TEnumerator : IEnumerator<TSource>
-        {
-            using (var e = (source ?? throw Error.ArgumentNull(nameof(source))).GetEnumerator())
-            {
-                if (!e.MoveNext())
-                    throw Error.NoElements();
-                return e.Current;
-            }
-        }
+            => FirstImpl(source ?? throw Error.ArgumentNull(nameof(source)), out var first) ? first : throw Error.NoElements();
 
         public static TSource First<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, bool> predicate)
             where TEnumerator : IEnumerator<TSource>
-        {
-            if (source == null) throw Error.ArgumentNull(nameof(source));
-            if (predicate == null) throw Error.ArgumentNull(nameof(predicate));
-            foreach (var element in source)
-                if (predicate(element))
-                    return element;
-            throw Error.NoMatch();
-        }
+            => FirstImpl(source ?? throw Error.ArgumentNull(nameof(source)), predicate ?? throw Error.ArgumentNull(nameof(predicate)), out var first) ? first : throw Error.NoMatches();
         #endregion
 
         #region FirstOrDefault
         public static TSource FirstOrDefault<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source)
             where TEnumerator : IEnumerator<TSource>
-        {
-            using (var e = (source ?? throw Error.ArgumentNull(nameof(source))).GetEnumerator())
-            {
-                if (!e.MoveNext())
-                    return default(TSource);
-                return e.Current;
-            }
-        }
+            => FirstImpl(source ?? throw Error.ArgumentNull(nameof(source)), out var first) ? first : default(TSource);
 
         public static TSource FirstOrDefault<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, bool> predicate)
             where TEnumerator : IEnumerator<TSource>
+            => FirstImpl(source ?? throw Error.ArgumentNull(nameof(source)), predicate ?? throw Error.ArgumentNull(nameof(predicate)), out var first) ? first : default(TSource);
+
+        private static bool FirstImpl<TSource, TEnumerator>(IEnumerable<TSource, TEnumerator> source, out TSource first)
+            where TEnumerator : IEnumerator<TSource>
         {
-            if (source == null) throw Error.ArgumentNull(nameof(source));
-            if (predicate == null) throw Error.ArgumentNull(nameof(predicate));
+            using (var e = source.GetEnumerator())
+            {
+                if (e.MoveNext())
+                {
+                    first = e.Current;
+                    return true;
+                }
+                else
+                {
+                    first = default(TSource);
+                    return false;
+                }
+            }
+        }
+
+        private static bool FirstImpl<TSource, TEnumerator>(IEnumerable<TSource, TEnumerator> source, Func<TSource, bool> predicate, out TSource first)
+            where TEnumerator : IEnumerator<TSource>
+        {
             foreach (var element in source)
                 if (predicate(element))
-                    return element;
-            return default(TSource);
+                {
+                    first = element;
+                    return true;
+                }
+            first = default(TSource);
+            return false;
         }
         #endregion
 
         #region Join
-        public static JoinEnumerable<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey, TResult, EquatableEqualityComparer<TKey>>
-            Join<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey, TResult>(this IEnumerable<TOuter, TOuterEnumerator> outer, IEnumerable<TInner, TInnerEnumerator> inner,
-            Func<TOuter, TKey> outerKeySelector, Func<TInner, TKey> innerKeySelector, Func<TOuter, TInner, TResult> resultSelector)
+        public static JoinEnumerable<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey, TResult, EquatableEqualityComparer<TKey>> Join<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey, TResult>(this IEnumerable<TOuter, TOuterEnumerator> outer, IEnumerable<TInner, TInnerEnumerator> inner, Func<TOuter, TKey> outerKeySelector, Func<TInner, TKey> innerKeySelector, Func<TOuter, TInner, TResult> resultSelector)
             where TOuterEnumerator : IEnumerator<TOuter>
             where TInnerEnumerator : IEnumerator<TInner>
             where TKey : IEquatable<TKey>
-        {
-            return new JoinEnumerable<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey, TResult, EquatableEqualityComparer<TKey>>(
-                outer ?? throw Error.ArgumentNull(nameof(outer)), inner ?? throw Error.ArgumentNull(nameof(inner)), outerKeySelector ?? throw Error.ArgumentNull(nameof(outerKeySelector)),
-                innerKeySelector ?? throw Error.ArgumentNull(nameof(innerKeySelector)), resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector)),
-                new EquatableEqualityComparer<TKey>());
-        }
+            => JoinImpl(outer ?? throw Error.ArgumentNull(nameof(outer)), inner ?? throw Error.ArgumentNull(nameof(inner)), outerKeySelector ?? throw Error.ArgumentNull(nameof(outerKeySelector)), innerKeySelector ?? throw Error.ArgumentNull(nameof(innerKeySelector)), resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector)), new EquatableEqualityComparer<TKey>());
 
-        public static JoinEnumerable<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey, TResult, IEqualityComparer<TKey>>
-            Join<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey, TResult>(this IEnumerable<TOuter, TOuterEnumerator> outer, IEnumerable<TInner, TInnerEnumerator> inner,
-            Func<TOuter, TKey> outerKeySelector, Func<TInner, TKey> innerKeySelector, Func<TOuter, TInner, TResult> resultSelector, IEqualityComparer<TKey> comparer)
+        public static JoinEnumerable<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey, TResult, IEqualityComparer<TKey>> Join<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey, TResult>(this IEnumerable<TOuter, TOuterEnumerator> outer, IEnumerable<TInner, TInnerEnumerator> inner, Func<TOuter, TKey> outerKeySelector, Func<TInner, TKey> innerKeySelector, Func<TOuter, TInner, TResult> resultSelector, IEqualityComparer<TKey> comparer)
             where TOuterEnumerator : IEnumerator<TOuter>
             where TInnerEnumerator : IEnumerator<TInner>
-        {
-            return new JoinEnumerable<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey, TResult, IEqualityComparer<TKey>>(
-                outer ?? throw Error.ArgumentNull(nameof(outer)), inner ?? throw Error.ArgumentNull(nameof(inner)), outerKeySelector ?? throw Error.ArgumentNull(nameof(outerKeySelector)),
-                innerKeySelector ?? throw Error.ArgumentNull(nameof(innerKeySelector)), resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector)),
-                comparer ?? EqualityComparer<TKey>.Default);
-        }
+            => JoinImpl(outer ?? throw Error.ArgumentNull(nameof(outer)), inner ?? throw Error.ArgumentNull(nameof(inner)), outerKeySelector ?? throw Error.ArgumentNull(nameof(outerKeySelector)), innerKeySelector ?? throw Error.ArgumentNull(nameof(innerKeySelector)), resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector)), comparer ?? EqualityComparer<TKey>.Default);
 
-        public static JoinEnumerable<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey, TResult, TEqualityComparer>
-            Join<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey, TResult, TEqualityComparer>(this IEnumerable<TOuter, TOuterEnumerator> outer, IEnumerable<TInner, TInnerEnumerator> inner,
-            Func<TOuter, TKey> outerKeySelector, Func<TInner, TKey> innerKeySelector, Func<TOuter, TInner, TResult> resultSelector, TEqualityComparer comparer)
+        public static JoinEnumerable<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey, TResult, TEqualityComparer> Join<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey, TResult, TEqualityComparer>(this IEnumerable<TOuter, TOuterEnumerator> outer, IEnumerable<TInner, TInnerEnumerator> inner, Func<TOuter, TKey> outerKeySelector, Func<TInner, TKey> innerKeySelector, Func<TOuter, TInner, TResult> resultSelector, TEqualityComparer comparer)
             where TOuterEnumerator : IEnumerator<TOuter>
             where TInnerEnumerator : IEnumerator<TInner>
             where TEqualityComparer : struct, IEqualityComparer<TKey>
-        {
-            return new JoinEnumerable<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey, TResult, TEqualityComparer>(
-                outer ?? throw Error.ArgumentNull(nameof(outer)), inner ?? throw Error.ArgumentNull(nameof(inner)), outerKeySelector ?? throw Error.ArgumentNull(nameof(outerKeySelector)),
-                innerKeySelector ?? throw Error.ArgumentNull(nameof(innerKeySelector)), resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector)),
-                comparer);
-        }
+            => JoinImpl(outer ?? throw Error.ArgumentNull(nameof(outer)), inner ?? throw Error.ArgumentNull(nameof(inner)), outerKeySelector ?? throw Error.ArgumentNull(nameof(outerKeySelector)), innerKeySelector ?? throw Error.ArgumentNull(nameof(innerKeySelector)), resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector)), comparer);
 
         #region String key optimization
-        public static JoinEnumerable<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, string, TResult, Cmp.StringComparer>
-            Join<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TResult>(this IEnumerable<TOuter, TOuterEnumerator> outer, IEnumerable<TInner, TInnerEnumerator> inner,
-            Func<TOuter, string> outerKeySelector, Func<TInner, string> innerKeySelector, Func<TOuter, TInner, TResult> resultSelector)
+        public static JoinEnumerable<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, string, TResult, Cmp.StringComparer> Join<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TResult>(this IEnumerable<TOuter, TOuterEnumerator> outer, IEnumerable<TInner, TInnerEnumerator> inner, Func<TOuter, string> outerKeySelector, Func<TInner, string> innerKeySelector, Func<TOuter, TInner, TResult> resultSelector)
             where TOuterEnumerator : IEnumerator<TOuter>
             where TInnerEnumerator : IEnumerator<TInner>
-        {
-            return new JoinEnumerable<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, string, TResult, Cmp.StringComparer>(
-                outer ?? throw Error.ArgumentNull(nameof(outer)), inner ?? throw Error.ArgumentNull(nameof(inner)), outerKeySelector ?? throw Error.ArgumentNull(nameof(outerKeySelector)),
-                innerKeySelector ?? throw Error.ArgumentNull(nameof(innerKeySelector)), resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector)),
-                new Cmp.StringComparer());
-        }
+            => JoinImpl(outer ?? throw Error.ArgumentNull(nameof(outer)), inner ?? throw Error.ArgumentNull(nameof(inner)), outerKeySelector ?? throw Error.ArgumentNull(nameof(outerKeySelector)), innerKeySelector ?? throw Error.ArgumentNull(nameof(innerKeySelector)), resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector)), new Cmp.StringComparer());
         #endregion
 
         #region Nullable key optimization
-        public static JoinEnumerable<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey?, TResult, NullableEqualityComparer<TKey, EquatableEqualityComparer<TKey>>>
-            Join<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey, TResult>(this IEnumerable<TOuter, TOuterEnumerator> outer, IEnumerable<TInner, TInnerEnumerator> inner,
-            Func<TOuter, TKey?> outerKeySelector, Func<TInner, TKey?> innerKeySelector, Func<TOuter, TInner, TResult> resultSelector)
+        public static JoinEnumerable<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey?, TResult, NullableEqualityComparer<TKey>> Join<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey, TResult>(this IEnumerable<TOuter, TOuterEnumerator> outer, IEnumerable<TInner, TInnerEnumerator> inner, Func<TOuter, TKey?> outerKeySelector, Func<TInner, TKey?> innerKeySelector, Func<TOuter, TInner, TResult> resultSelector)
             where TOuterEnumerator : IEnumerator<TOuter>
             where TInnerEnumerator : IEnumerator<TInner>
             where TKey : struct, IEquatable<TKey>
-        {
-            return new JoinEnumerable<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey?, TResult, NullableEqualityComparer<TKey, EquatableEqualityComparer<TKey>>>(
-                outer ?? throw Error.ArgumentNull(nameof(outer)), inner ?? throw Error.ArgumentNull(nameof(inner)), outerKeySelector ?? throw Error.ArgumentNull(nameof(outerKeySelector)),
-                innerKeySelector ?? throw Error.ArgumentNull(nameof(innerKeySelector)), resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector)),
-                new NullableEqualityComparer<TKey, EquatableEqualityComparer<TKey>>(new EquatableEqualityComparer<TKey>()));
-        }
+            => JoinImpl(outer ?? throw Error.ArgumentNull(nameof(outer)), inner ?? throw Error.ArgumentNull(nameof(inner)), outerKeySelector ?? throw Error.ArgumentNull(nameof(outerKeySelector)), innerKeySelector ?? throw Error.ArgumentNull(nameof(innerKeySelector)), resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector)), new NullableEqualityComparer<TKey>());
         #endregion
+
+        private static JoinEnumerable<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey, TResult, TEqualityComparer> JoinImpl<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey, TResult, TEqualityComparer>(IEnumerable<TOuter, TOuterEnumerator> outer, IEnumerable<TInner, TInnerEnumerator> inner, Func<TOuter, TKey> outerKeySelector, Func<TInner, TKey> innerKeySelector, Func<TOuter, TInner, TResult> resultSelector, TEqualityComparer comparer)
+            where TOuterEnumerator : IEnumerator<TOuter>
+            where TInnerEnumerator : IEnumerator<TInner>
+            where TEqualityComparer : IEqualityComparer<TKey>
+            => new JoinEnumerable<TOuter, TOuterEnumerator, TInner, TInnerEnumerator, TKey, TResult, TEqualityComparer>(outer, inner, outerKeySelector, innerKeySelector, resultSelector, comparer);
         #endregion
 
         #region Last
         public static TSource Last<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source)
             where TEnumerator : IEnumerator<TSource>
-        {
-            using (var e = (source ?? throw Error.ArgumentNull(nameof(source))).GetEnumerator())
-            {
-                if (!e.MoveNext())
-                    throw Error.NoElements();
-                var last = e.Current;
-                while (e.MoveNext())
-                    last = e.Current;
-                return last;
-            }
-        }
+            => LastImpl(source ?? throw Error.ArgumentNull(nameof(source)), out var last) ? last : throw Error.NoElements();
 
         public static TSource Last<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, bool> predicate)
             where TEnumerator : IEnumerator<TSource>
-        {
-            if (source == null) throw Error.ArgumentNull(nameof(source));
-            if (predicate == null) throw Error.ArgumentNull(nameof(predicate));
-            using (var e = source.GetEnumerator())
-            {
-                while (e.MoveNext())
-                {
-                    var last = e.Current;
-                    if (predicate(last))
-                    {
-                        while (e.MoveNext())
-                        {
-                            var element = e.Current;
-                            if (predicate(last))
-                                last = element;
-                        }
-                        return last;
-                    }
-                }
-                throw Error.NoElements();
-            }
-        }
+            => LastImpl(source ?? throw Error.ArgumentNull(nameof(source)), predicate ?? throw Error.ArgumentNull(nameof(predicate)), out var last) ? last : throw Error.NoElements();
         #endregion
 
         #region LastOrDefault
         public static TSource LastOrDefault<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source)
             where TEnumerator : IEnumerator<TSource>
-        {
-            using (var e = (source ?? throw Error.ArgumentNull(nameof(source))).GetEnumerator())
-            {
-                if (!e.MoveNext())
-                    return default(TSource);
-                var last = e.Current;
-                while (e.MoveNext())
-                    last = e.Current;
-                return last;
-            }
-        }
+            => LastImpl(source ?? throw Error.ArgumentNull(nameof(source)), out var last) ? last : default(TSource);
 
         public static TSource LastOrDefault<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, bool> predicate)
             where TEnumerator : IEnumerator<TSource>
+            => LastImpl(source ?? throw Error.ArgumentNull(nameof(source)), predicate ?? throw Error.ArgumentNull(nameof(predicate)), out var last) ? last : default(TSource);
+
+        private static bool LastImpl<TSource, TEnumerator>(IEnumerable<TSource, TEnumerator> source, out TSource last)
+            where TEnumerator : IEnumerator<TSource>
         {
-            if (source == null) throw Error.ArgumentNull(nameof(source));
-            if (predicate == null) throw Error.ArgumentNull(nameof(predicate));
+            using (var e = (source ?? throw Error.ArgumentNull(nameof(source))).GetEnumerator())
+            {
+                if (e.MoveNext())
+                {
+                    last = e.Current;
+                    while (e.MoveNext())
+                        last = e.Current;
+                    return true;
+                }
+            }
+            last = default(TSource);
+            return false;
+        }
+
+        private static bool LastImpl<TSource, TEnumerator>(IEnumerable<TSource, TEnumerator> source, Func<TSource, bool> predicate, out TSource last)
+            where TEnumerator : IEnumerator<TSource>
+        {
             using (var e = source.GetEnumerator())
             {
                 while (e.MoveNext())
                 {
-                    var last = e.Current;
+                    last = e.Current;
                     if (predicate(last))
                     {
                         while (e.MoveNext())
@@ -392,11 +330,12 @@ namespace Inlinq
                             if (predicate(last))
                                 last = element;
                         }
-                        return last;
+                        return true;
                     }
                 }
-                return default(TSource);
             }
+            last = default(TSource);
+            return false;
         }
         #endregion
 
@@ -425,12 +364,10 @@ namespace Inlinq
             if (source == null) throw Error.ArgumentNull(nameof(source));
             if (predicate == null) throw Error.ArgumentNull(nameof(predicate));
             long count = 0;
-            foreach (var element in source)
-            {
-                if (predicate(element))
-                    count = checked(count + 1);
-
-            }
+            using (var e = source.GetEnumerator())
+                while (e.MoveNext())
+                    if (predicate(e.Current))
+                        count = checked(count + 1);
             return count;
         }
         #endregion
@@ -468,12 +405,12 @@ namespace Inlinq
         public static TSource? Max<TSource, TEnumerator>(this IEnumerable<TSource?, TEnumerator> source)
             where TSource : struct, IComparable<TSource>
             where TEnumerator : IEnumerator<TSource?>
-            => MaxImpl(source ?? throw Error.ArgumentNull(nameof(source)), new NullableComparer<TSource, ComparableComparer<TSource>>(new ComparableComparer<TSource>()));
+            => MaxImpl(source ?? throw Error.ArgumentNull(nameof(source)), new NullableComparer<TSource>());
 
         public static TResult? Max<TSource, TResult, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TResult?> selector)
             where TResult : struct, IComparable<TResult>
             where TEnumerator : IEnumerator<TSource>
-            => MaxImpl(source ?? throw Error.ArgumentNull(nameof(source)), selector ?? throw Error.ArgumentNull(nameof(selector)), new NullableComparer<TResult, ComparableComparer<TResult>>(new ComparableComparer<TResult>()));
+            => MaxImpl(source ?? throw Error.ArgumentNull(nameof(source)), selector ?? throw Error.ArgumentNull(nameof(selector)), new NullableComparer<TResult>());
         #endregion
 
         private static TSource MaxImpl<TSource, TEnumerator, TComparer>(IEnumerable<TSource, TEnumerator> source, TComparer comparer)
@@ -484,7 +421,7 @@ namespace Inlinq
                 return MaxImpl<TSource, TEnumerator, TComparer>(e, comparer);
         }
 
-        private static TResult MaxImpl<TSource, TResult, TEnumerator, TComparer>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TResult> selector, TComparer comparer)
+        private static TResult MaxImpl<TSource, TResult, TEnumerator, TComparer>(IEnumerable<TSource, TEnumerator> source, Func<TSource, TResult> selector, TComparer comparer)
             where TEnumerator : IEnumerator<TSource>
             where TComparer : IComparer<TResult>
         {
@@ -497,38 +434,36 @@ namespace Inlinq
             where TComparer : IComparer<TSource>
         {
             var defaultValue = default(TSource);
-            if (!source.MoveNext())
+            if (source.MoveNext())
             {
+                var max = source.Current;
                 if (defaultValue == null)
-                    return defaultValue;
-                throw Error.NoElements();
-            }
-            var max = source.Current;
-            if (defaultValue == null)
-            {
-                while (max == null)
                 {
-                    if (!source.MoveNext())
-                        return defaultValue;
-                    max = source.Current;
+                    while (max == null)
+                    {
+                        if (!source.MoveNext())
+                            return defaultValue;
+                        max = source.Current;
+                    }
+                    while (source.MoveNext())
+                    {
+                        var x = source.Current;
+                        if (x != null && comparer.Compare(x, max) > 0)
+                            max = x;
+                    }
                 }
-                while (source.MoveNext())
+                else
                 {
-                    var x = source.Current;
-                    if (x != null && comparer.Compare(x, max) > 0)
-                        max = x;
+                    while (source.MoveNext())
+                    {
+                        var x = source.Current;
+                        if (comparer.Compare(x, max) > 0)
+                            max = x;
+                    }
                 }
+                return max;
             }
-            else
-            {
-                while (source.MoveNext())
-                {
-                    var x = source.Current;
-                    if (comparer.Compare(x, max) > 0)
-                        max = x;
-                }
-            }
-            return max;
+            return defaultValue == null ? defaultValue : throw Error.NoElements();
         }
         #endregion
 
@@ -565,12 +500,12 @@ namespace Inlinq
         public static TSource? Min<TSource, TEnumerator>(this IEnumerable<TSource?, TEnumerator> source)
             where TSource : struct, IComparable<TSource>
             where TEnumerator : IEnumerator<TSource?>
-            => MinImpl(source ?? throw Error.ArgumentNull(nameof(source)), new NullableComparer<TSource, ComparableComparer<TSource>>(new ComparableComparer<TSource>()));
+            => MinImpl(source ?? throw Error.ArgumentNull(nameof(source)), new NullableComparer<TSource>());
 
         public static TResult? Min<TSource, TResult, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TResult?> selector)
             where TResult : struct, IComparable<TResult>
             where TEnumerator : IEnumerator<TSource>
-            => MinImpl(source ?? throw Error.ArgumentNull(nameof(source)), selector ?? throw Error.ArgumentNull(nameof(selector)), new NullableComparer<TResult, ComparableComparer<TResult>>(new ComparableComparer<TResult>()));
+            => MinImpl(source ?? throw Error.ArgumentNull(nameof(source)), selector ?? throw Error.ArgumentNull(nameof(selector)), new NullableComparer<TResult>());
         #endregion
 
         private static TSource MinImpl<TSource, TEnumerator, TComparer>(IEnumerable<TSource, TEnumerator> source, TComparer comparer)
@@ -581,7 +516,7 @@ namespace Inlinq
                 return MinImpl<TSource, TEnumerator, TComparer>(e, comparer);
         }
 
-        private static TResult MinImpl<TSource, TResult, TEnumerator, TComparer>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TResult> selector, TComparer comparer)
+        private static TResult MinImpl<TSource, TResult, TEnumerator, TComparer>(IEnumerable<TSource, TEnumerator> source, Func<TSource, TResult> selector, TComparer comparer)
             where TEnumerator : IEnumerator<TSource>
             where TComparer : IComparer<TResult>
         {
@@ -594,38 +529,36 @@ namespace Inlinq
             where TComparer : IComparer<TSource>
         {
             var defaultValue = default(TSource);
-            if (!source.MoveNext())
+            if (source.MoveNext())
             {
+                var min = source.Current;
                 if (defaultValue == null)
-                    return defaultValue;
-                throw Error.NoElements();
-            }
-            var min = source.Current;
-            if (defaultValue == null)
-            {
-                while (min == null)
                 {
-                    if (!source.MoveNext())
-                        return defaultValue;
-                    min = source.Current;
+                    while (min == null)
+                    {
+                        if (!source.MoveNext())
+                            return defaultValue;
+                        min = source.Current;
+                    }
+                    while (source.MoveNext())
+                    {
+                        var x = source.Current;
+                        if (x != null && comparer.Compare(x, min) < 0)
+                            min = x;
+                    }
                 }
-                while (source.MoveNext())
+                else
                 {
-                    var x = source.Current;
-                    if (x != null && comparer.Compare(x, min) < 0)
-                        min = x;
+                    while (source.MoveNext())
+                    {
+                        var x = source.Current;
+                        if (comparer.Compare(x, min) < 0)
+                            min = x;
+                    }
                 }
+                return min;
             }
-            else
-            {
-                while (source.MoveNext())
-                {
-                    var x = source.Current;
-                    if (comparer.Compare(x, min) < 0)
-                        min = x;
-                }
-            }
-            return min;
+                return defaultValue == null ? defaultValue : throw Error.NoElements();
         }
         #endregion
 
@@ -638,154 +571,133 @@ namespace Inlinq
         public static OrderedEnumerable<TSource, TEnumerator, TKey, ComparableComparer<TKey>> OrderBy<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector)
             where TEnumerator : IEnumerator<TSource>
             where TKey : IComparable<TKey>
-            => new OrderedEnumerable<TSource, TEnumerator, TKey, ComparableComparer<TKey>>(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), new ComparableComparer<TKey>());
+            => OrderBy(source, keySelector, new ComparableComparer<TKey>());
 
-        public static OrderedEnumerable<TSource, TEnumerator, TKey, TComparer>
-            OrderBy<TSource, TEnumerator, TKey, TComparer>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, TComparer comparer)
+        public static OrderedEnumerable<TSource, TEnumerator, TKey, TComparer> OrderBy<TSource, TEnumerator, TKey, TComparer>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, TComparer comparer)
             where TEnumerator : IEnumerator<TSource>
             where TComparer : struct, IComparer<TKey>
-            => new OrderedEnumerable<TSource, TEnumerator, TKey, TComparer>(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer);
+            => OrderByImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer);
 
-        public static OrderedEnumerable<TSource, TEnumerator, TKey, IComparer<TKey>>
-            OrderBy<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer)
+        public static OrderedEnumerable<TSource, TEnumerator, TKey, IComparer<TKey>> OrderBy<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer)
             where TEnumerator : IEnumerator<TSource>
-            => new OrderedEnumerable<TSource, TEnumerator, TKey, IComparer<TKey>>(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer ?? Comparer<TKey>.Default);
+            => OrderByImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer ?? Comparer<TKey>.Default);
 
         #region String key optimization
         public static OrderedEnumerable<TSource, TEnumerator, string, Cmp.StringComparer> OrderBy<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, string> keySelector)
             where TEnumerator : IEnumerator<TSource>
-            => new OrderedEnumerable<TSource, TEnumerator, string, Cmp.StringComparer>(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), new Cmp.StringComparer());
+            => OrderBy(source, keySelector, new Cmp.StringComparer());
         #endregion
 
         #region Nullable key optimization
-        public static OrderedEnumerable<TSource, TEnumerator, TKey?, NullableComparer<TKey, ComparableComparer<TKey>>>
-            OrderBy<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey?> keySelector)
+        public static OrderedEnumerable<TSource, TEnumerator, TKey?, NullableComparer<TKey>> OrderBy<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey?> keySelector)
             where TEnumerator : IEnumerator<TSource>
             where TKey : struct, IComparable<TKey>
-        {
-            return new OrderedEnumerable<TSource, TEnumerator, TKey?, NullableComparer<TKey, ComparableComparer<TKey>>>(source ?? throw Error.ArgumentNull(nameof(source)),
-                keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), new NullableComparer<TKey, ComparableComparer<TKey>>(new ComparableComparer<TKey>()));
-        }
+            => OrderBy(source, keySelector, new NullableComparer<TKey>());
         #endregion
+
+        private static OrderedEnumerable<TSource, TEnumerator, TKey, TComparer> OrderByImpl<TSource, TEnumerator, TKey, TComparer>(IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, TComparer comparer)
+            where TEnumerator : IEnumerator<TSource>
+            where TComparer : IComparer<TKey>
+            => new OrderedEnumerable<TSource, TEnumerator, TKey, TComparer>(source, keySelector, comparer);
         #endregion
 
         #region OrderByDescending
-        public static OrderedEnumerable<TSource, TEnumerator, TKey, ReverseComparer<TKey, ComparableComparer<TKey>>>
-            OrderByDescending<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector)
+        public static OrderedEnumerable<TSource, TEnumerator, TKey, ReverseComparer<TKey, ComparableComparer<TKey>>> OrderByDescending<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector)
             where TEnumerator : IEnumerator<TSource>
             where TKey : IComparable<TKey>
-            => OrderBy(source, keySelector, new ReverseComparer<TKey, ComparableComparer<TKey>>(new ComparableComparer<TKey>()));
+            => OrderByDescending(source, keySelector, new ComparableComparer<TKey>());
 
-        public static OrderedEnumerable<TSource, TEnumerator, TKey, ReverseComparer<TKey, TComparer>>
-            OrderByDescending<TSource, TEnumerator, TKey, TComparer>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, TComparer comparer)
+        public static OrderedEnumerable<TSource, TEnumerator, TKey, ReverseComparer<TKey, TComparer>> OrderByDescending<TSource, TEnumerator, TKey, TComparer>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, TComparer comparer)
             where TEnumerator : IEnumerator<TSource>
             where TComparer : struct, IComparer<TKey>
-            => OrderBy(source, keySelector, new ReverseComparer<TKey, TComparer>(comparer));
+            => OrderByDescendingImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer);
 
-        public static OrderedEnumerable<TSource, TEnumerator, TKey, ReverseComparer<TKey, IComparer<TKey>>>
-            OrderByDescending<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer)
+        public static OrderedEnumerable<TSource, TEnumerator, TKey, ReverseComparer<TKey, IComparer<TKey>>> OrderByDescending<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer)
             where TEnumerator : IEnumerator<TSource>
-            => OrderBy(source, keySelector, new ReverseComparer<TKey, IComparer<TKey>>(comparer ?? Comparer<TKey>.Default));
+            => OrderByDescendingImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer ?? Comparer<TKey>.Default);
 
         #region String key optimization
-        public static OrderedEnumerable<TSource, TEnumerator, string, ReverseComparer<string, Cmp.StringComparer>>
-            OrderByDescending<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, string> keySelector)
+        public static OrderedEnumerable<TSource, TEnumerator, string, ReverseComparer<string, Cmp.StringComparer>> OrderByDescending<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, string> keySelector)
             where TEnumerator : IEnumerator<TSource>
-            => OrderBy(source, keySelector, new ReverseComparer<string, Cmp.StringComparer>(new Cmp.StringComparer()));
+            => OrderByDescending(source, keySelector, new Cmp.StringComparer());
         #endregion
 
         #region Nullable key optimization
-        public static OrderedEnumerable<TSource, TEnumerator, TKey?, ReverseComparer<TKey?, NullableComparer<TKey, ComparableComparer<TKey>>>>
-            OrderByDescending<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey?> keySelector)
+        public static OrderedEnumerable<TSource, TEnumerator, TKey?, ReverseComparer<TKey?, NullableComparer<TKey>>> OrderByDescending<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey?> keySelector)
             where TEnumerator : IEnumerator<TSource>
             where TKey : struct, IComparable<TKey>
-            => OrderBy(source, keySelector, new ReverseComparer<TKey?, NullableComparer<TKey, ComparableComparer<TKey>>>(new NullableComparer<TKey, ComparableComparer<TKey>>(new ComparableComparer<TKey>())));
+            => OrderByDescending(source, keySelector, new NullableComparer<TKey>());
         #endregion
+
+        private static OrderedEnumerable<TSource, TEnumerator, TKey, ReverseComparer<TKey, TComparer>> OrderByDescendingImpl<TSource, TEnumerator, TKey, TComparer>(IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, TComparer comparer)
+            where TEnumerator : IEnumerator<TSource>
+            where TComparer : IComparer<TKey>
+            => OrderByImpl(source, keySelector, new ReverseComparer<TKey, TComparer>(comparer));
         #endregion
 
         #region Range
         public static Range32Enumerable Range(int start, int count)
-            => start + count >= start ? new Range32Enumerable(start, count) : throw Error.ArgumentOutOfRange(nameof(count));
+            => new Range32Enumerable(start, start + count >= start ? count : throw Error.ArgumentOutOfRange(nameof(count)));
 
         public static Range64Enumerable Range(long start, long count)
-            => start + count >= start ? new Range64Enumerable(start, count) : throw Error.ArgumentOutOfRange(nameof(count));
+            => new Range64Enumerable(start, start + count >= start ? count : throw Error.ArgumentOutOfRange(nameof(count)));
         #endregion
 
         #region Repeat
         public static Repeat32Enumerable<TResult> Repeat<TResult>(TResult element, int count)
-            => count >= 0 ? new Repeat32Enumerable<TResult>(element, count) : throw Error.ArgumentOutOfRange(nameof(count));
+            => new Repeat32Enumerable<TResult>(element, count >= 0 ? count : throw Error.ArgumentOutOfRange(nameof(count)));
 
         public static Repeat64Enumerable<TResult> Repeat<TResult>(TResult element, long count)
-            => count >= 0 ? new Repeat64Enumerable<TResult>(element, count) : throw Error.ArgumentOutOfRange(nameof(count));
+            => new Repeat64Enumerable<TResult>(element, count >= 0 ? count : throw Error.ArgumentOutOfRange(nameof(count)));
         #endregion
 
         #region Select
         public static SelectEnumerable<TSource, TResult, TEnumerator> Select<TSource, TResult, TEnumerator>(
             this IEnumerable<TSource, TEnumerator> source, Func<TSource, TResult> selector)
             where TEnumerator : IEnumerator<TSource>
-            => new SelectEnumerable<TSource, TResult, TEnumerator>(source ?? throw Error.ArgumentNull(nameof(source)), selector ?? throw Error.ArgumentNull(nameof(selector)));
+            => SelectImpl(source ?? throw Error.ArgumentNull(nameof(source)), selector ?? throw Error.ArgumentNull(nameof(selector)));
+
+        private static SelectEnumerable<TSource, TResult, TEnumerator> SelectImpl<TSource, TResult, TEnumerator>(IEnumerable<TSource, TEnumerator> source, Func<TSource, TResult> selector)
+            where TEnumerator : IEnumerator<TSource>
+            => new SelectEnumerable<TSource, TResult, TEnumerator>(source, selector);
         #endregion
 
         #region SelectMany
-        public static SelectManyEnumerableA<TSource, TResult, TEnumerator1, TEnumerator2>
-            SelectMany<TSource, TResult, TEnumerator1, TEnumerator2>(this IEnumerable<TSource, TEnumerator1> source, Func<TSource, IEnumerable<TResult, TEnumerator2>> selector)
+        public static SelectManyEnumerableA<TSource, TResult, TEnumerator1, TEnumerator2> SelectMany<TSource, TResult, TEnumerator1, TEnumerator2>(this IEnumerable<TSource, TEnumerator1> source, Func<TSource, IEnumerable<TResult, TEnumerator2>> selector)
             where TEnumerator1 : IEnumerator<TSource>
             where TEnumerator2 : IEnumerator<TResult>
             => new SelectManyEnumerableA<TSource, TResult, TEnumerator1, TEnumerator2>(source ?? throw Error.ArgumentNull(nameof(source)), selector ?? throw Error.ArgumentNull(nameof(selector)));
 
-        public static SelectManyEnumerableB<TSource, TResult, TEnumerator1, TEnumerator2>
-            SelectMany<TSource, TResult, TEnumerator1, TEnumerator2>(this IEnumerable<TSource, TEnumerator1> source, Func<TSource, int, IEnumerable<TResult, TEnumerator2>> selector)
+        public static SelectManyEnumerableB<TSource, TResult, TEnumerator1, TEnumerator2> SelectMany<TSource, TResult, TEnumerator1, TEnumerator2>(this IEnumerable<TSource, TEnumerator1> source, Func<TSource, int, IEnumerable<TResult, TEnumerator2>> selector)
             where TEnumerator1 : IEnumerator<TSource>
             where TEnumerator2 : IEnumerator<TResult>
             => new SelectManyEnumerableB<TSource, TResult, TEnumerator1, TEnumerator2>(source ?? throw Error.ArgumentNull(nameof(source)), selector ?? throw Error.ArgumentNull(nameof(selector)));
 
-        public static SelectManyEnumerableC<TSource, TResult, TEnumerator>
-            SelectMany<TSource, TResult, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, IEnumerable<TResult>> selector)
+        public static SelectManyEnumerableC<TSource, TResult, TEnumerator> SelectMany<TSource, TResult, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, IEnumerable<TResult>> selector)
             where TEnumerator : IEnumerator<TSource>
             => new SelectManyEnumerableC<TSource, TResult, TEnumerator>(source ?? throw Error.ArgumentNull(nameof(source)), selector ?? throw Error.ArgumentNull(nameof(selector)));
 
-        public static SelectManyEnumerableD<TSource, TResult, TEnumerator>
-            SelectMany<TSource, TResult, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, int, IEnumerable<TResult>> selector)
+        public static SelectManyEnumerableD<TSource, TResult, TEnumerator> SelectMany<TSource, TResult, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, int, IEnumerable<TResult>> selector)
             where TEnumerator : IEnumerator<TSource>
             => new SelectManyEnumerableD<TSource, TResult, TEnumerator>(source ?? throw Error.ArgumentNull(nameof(source)), selector ?? throw Error.ArgumentNull(nameof(selector)));
 
-        public static SelectManyEnumerableE<TSource, TCollection, TResult, TEnumerator1, TEnumerator2>
-            SelectMany<TSource, TCollection, TResult, TEnumerator1, TEnumerator2>(this IEnumerable<TSource, TEnumerator1> source, Func<TSource, IEnumerable<TCollection, TEnumerator2>> collectionSelector,
-            Func<TSource, TCollection, TResult> resultSelector)
+        public static SelectManyEnumerableE<TSource, TCollection, TResult, TEnumerator1, TEnumerator2> SelectMany<TSource, TCollection, TResult, TEnumerator1, TEnumerator2>(this IEnumerable<TSource, TEnumerator1> source, Func<TSource, IEnumerable<TCollection, TEnumerator2>> collectionSelector, Func<TSource, TCollection, TResult> resultSelector)
             where TEnumerator1 : IEnumerator<TSource>
             where TEnumerator2 : IEnumerator<TCollection>
-        {
-            return new SelectManyEnumerableE<TSource, TCollection, TResult, TEnumerator1, TEnumerator2>(source ?? throw Error.ArgumentNull(nameof(source)),
-                collectionSelector ?? throw Error.ArgumentNull(nameof(collectionSelector)), resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector)));
-        }
+            => new SelectManyEnumerableE<TSource, TCollection, TResult, TEnumerator1, TEnumerator2>(source ?? throw Error.ArgumentNull(nameof(source)), collectionSelector ?? throw Error.ArgumentNull(nameof(collectionSelector)), resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector)));
 
-        public static SelectManyEnumerableF<TSource, TCollection, TResult, TEnumerator1, TEnumerator2>
-            SelectMany<TSource, TCollection, TResult, TEnumerator1, TEnumerator2>(this IEnumerable<TSource, TEnumerator1> source, Func<TSource, int, IEnumerable<TCollection, TEnumerator2>> collectionSelector,
-            Func<TSource, TCollection, TResult> resultSelector)
+        public static SelectManyEnumerableF<TSource, TCollection, TResult, TEnumerator1, TEnumerator2> SelectMany<TSource, TCollection, TResult, TEnumerator1, TEnumerator2>(this IEnumerable<TSource, TEnumerator1> source, Func<TSource, int, IEnumerable<TCollection, TEnumerator2>> collectionSelector, Func<TSource, TCollection, TResult> resultSelector)
             where TEnumerator1 : IEnumerator<TSource>
             where TEnumerator2 : IEnumerator<TCollection>
-        {
-            return new SelectManyEnumerableF<TSource, TCollection, TResult, TEnumerator1, TEnumerator2>(source ?? throw Error.ArgumentNull(nameof(source)),
-                collectionSelector ?? throw Error.ArgumentNull(nameof(collectionSelector)), resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector)));
-        }
+            => new SelectManyEnumerableF<TSource, TCollection, TResult, TEnumerator1, TEnumerator2>(source ?? throw Error.ArgumentNull(nameof(source)), collectionSelector ?? throw Error.ArgumentNull(nameof(collectionSelector)), resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector)));
 
-        public static SelectManyEnumerableG<TSource, TCollection, TResult, TEnumerator>
-            SelectMany<TSource, TCollection, TResult, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, IEnumerable<TCollection>> collectionSelector,
-            Func<TSource, TCollection, TResult> resultSelector)
+        public static SelectManyEnumerableG<TSource, TCollection, TResult, TEnumerator> SelectMany<TSource, TCollection, TResult, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, IEnumerable<TCollection>> collectionSelector, Func<TSource, TCollection, TResult> resultSelector)
             where TEnumerator : IEnumerator<TSource>
-        {
-            return new SelectManyEnumerableG<TSource, TCollection, TResult, TEnumerator>(source ?? throw Error.ArgumentNull(nameof(source)),
-                collectionSelector ?? throw Error.ArgumentNull(nameof(collectionSelector)), resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector)));
-        }
+            => new SelectManyEnumerableG<TSource, TCollection, TResult, TEnumerator>(source ?? throw Error.ArgumentNull(nameof(source)), collectionSelector ?? throw Error.ArgumentNull(nameof(collectionSelector)), resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector)));
 
-        public static SelectManyEnumerableH<TSource, TCollection, TResult, TEnumerator>
-            SelectMany<TSource, TCollection, TResult, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, int, IEnumerable<TCollection>> collectionSelector,
-            Func<TSource, TCollection, TResult> resultSelector)
+        public static SelectManyEnumerableH<TSource, TCollection, TResult, TEnumerator> SelectMany<TSource, TCollection, TResult, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, int, IEnumerable<TCollection>> collectionSelector, Func<TSource, TCollection, TResult> resultSelector)
             where TEnumerator : IEnumerator<TSource>
-        {
-            return new SelectManyEnumerableH<TSource, TCollection, TResult, TEnumerator>(source ?? throw Error.ArgumentNull(nameof(source)),
-                collectionSelector ?? throw Error.ArgumentNull(nameof(collectionSelector)), resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector)));
-        }
+            => new SelectManyEnumerableH<TSource, TCollection, TResult, TEnumerator>(source ?? throw Error.ArgumentNull(nameof(source)), collectionSelector ?? throw Error.ArgumentNull(nameof(collectionSelector)), resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector)));
         #endregion
 
         #region SequenceEqual
@@ -793,40 +705,29 @@ namespace Inlinq
             where TSource : IEquatable<TSource>
             where TEnumerator1 : IEnumerator<TSource>
             where TEnumerator2 : IEnumerator<TSource>
-        {
-            return SequenceEqualImpl(first ?? throw Error.ArgumentNull(nameof(first)), second ?? throw Error.ArgumentNull(nameof(second)), new EquatableEqualityComparer<TSource>());
-        }
+            => SequenceEqual(first, second, new EquatableEqualityComparer<TSource>());
 
         public static bool SequenceEqual<TSource, TEnumerator1, TEnumerator2>(this IEnumerable<TSource, TEnumerator1> first, IEnumerable<TSource, TEnumerator2> second, IEqualityComparer<TSource> comparer)
             where TEnumerator1 : IEnumerator<TSource>
             where TEnumerator2 : IEnumerator<TSource>
-        {
-            return SequenceEqualImpl(first ?? throw Error.ArgumentNull(nameof(first)), second ?? throw Error.ArgumentNull(nameof(second)), comparer ?? EqualityComparer<TSource>.Default);
-        }
+            => SequenceEqualImpl(first ?? throw Error.ArgumentNull(nameof(first)), second ?? throw Error.ArgumentNull(nameof(second)), comparer ?? EqualityComparer<TSource>.Default);
 
         public static bool SequenceEqual<TSource, TEnumerator1, TEnumerator2, TEqualityComparer>(this IEnumerable<TSource, TEnumerator1> first, IEnumerable<TSource, TEnumerator2> second, TEqualityComparer comparer)
             where TEnumerator1 : IEnumerator<TSource>
             where TEnumerator2 : IEnumerator<TSource>
             where TEqualityComparer : struct, IEqualityComparer<TSource>
-        {
-            return SequenceEqualImpl(first ?? throw Error.ArgumentNull(nameof(first)), second ?? throw Error.ArgumentNull(nameof(second)), comparer);
-        }
+            => SequenceEqualImpl(first ?? throw Error.ArgumentNull(nameof(first)), second ?? throw Error.ArgumentNull(nameof(second)), comparer);
 
         public static bool SequenceEqual<TEnumerator1, TEnumerator2>(this IEnumerable<string, TEnumerator1> first, IEnumerable<string, TEnumerator2> second)
             where TEnumerator1 : IEnumerator<string>
             where TEnumerator2 : IEnumerator<string>
-        {
-            return SequenceEqualImpl(first ?? throw Error.ArgumentNull(nameof(first)), second ?? throw Error.ArgumentNull(nameof(second)), new Cmp.StringComparer());
-        }
+            => SequenceEqual(first, second, new Cmp.StringComparer());
 
         public static bool SequenceEqual<TSource, TEnumerator1, TEnumerator2>(this IEnumerable<TSource?, TEnumerator1> first, IEnumerable<TSource?, TEnumerator2> second)
             where TSource : struct, IEquatable<TSource>
             where TEnumerator1 : IEnumerator<TSource?>
             where TEnumerator2 : IEnumerator<TSource?>
-        {
-            return SequenceEqualImpl(first ?? throw Error.ArgumentNull(nameof(first)), second ?? throw Error.ArgumentNull(nameof(second)),
-                new NullableEqualityComparer<TSource, EquatableEqualityComparer<TSource>>(new EquatableEqualityComparer<TSource>()));
-        }
+            => SequenceEqual(first, second, new NullableEqualityComparer<TSource>());
 
         private static bool SequenceEqualImpl<TSource, TEnumerator1, TEnumerator2, TEqualityComparer>(IEnumerable<TSource, TEnumerator1> first, IEnumerable<TSource, TEnumerator2> second, TEqualityComparer comparer)
             where TEnumerator1 : IEnumerator<TSource>
@@ -852,87 +753,78 @@ namespace Inlinq
         #region Single
         public static TSource Single<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source)
             where TEnumerator : IEnumerator<TSource>
-        {
-            using (var e = (source ?? throw Error.ArgumentNull(nameof(source))).GetEnumerator())
-            {
-                if (!e.MoveNext())
-                    throw Error.NoElements();
-                var element = e.Current;
-                if (e.MoveNext())
-                    throw Error.MoreThanOneElement();
-                return element;
-            }
-        }
+            => SingleImpl(source ?? throw Error.ArgumentNull(nameof(source)), out var single, out var status) ? single : throw (status == SingleStatus.None ? Error.NoElements() : Error.MoreThanOneElement());
 
         public static TSource Single<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, bool> predicate)
             where TEnumerator : IEnumerator<TSource>
-        {
-            if (source == null) throw Error.ArgumentNull(nameof(source));
-            if (predicate == null) throw Error.ArgumentNull(nameof(predicate));
-            using (var e = source.GetEnumerator())
-            {
-                while (e.MoveNext())
-                {
-                    var element = e.Current;
-                    if (predicate(element))
-                    {
-                        while (e.MoveNext())
-                            if (predicate(e.Current))
-                                throw Error.MoreThanOneMatch();
-                        return element;
-                    }
-                }
-                throw Error.NoElements();
-            }
-        }
+            => SingleImpl(source ?? throw Error.ArgumentNull(nameof(source)), predicate ?? throw Error.ArgumentNull(nameof(predicate)), out var single, out var status) ? single : throw (status == SingleStatus.None ? Error.NoMatches() : Error.MoreThanOneMatch());
         #endregion
 
         #region SingleOrDefault
         public static TSource SingleOrDefault<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source)
             where TEnumerator : IEnumerator<TSource>
-        {
-            using (var e = (source ?? throw Error.ArgumentNull(nameof(source))).GetEnumerator())
-            {
-                if (!e.MoveNext())
-                    return default(TSource);
-                var element = e.Current;
-                if (!e.MoveNext())
-                    return element;
-                throw Error.MoreThanOneElement();
-            }
-        }
+            => SingleImpl(source ?? throw Error.ArgumentNull(nameof(source)), out var single, out var status) ? single : status == SingleStatus.None ? default(TSource) : throw Error.MoreThanOneMatch();
 
         public static TSource SingleOrDefault<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, bool> predicate)
             where TEnumerator : IEnumerator<TSource>
+            => SingleImpl(source ?? throw Error.ArgumentNull(nameof(source)), predicate ?? throw Error.ArgumentNull(nameof(predicate)), out var single, out var status) ? single : status == SingleStatus.None ? default(TSource) : throw Error.MoreThanOneMatch();
+
+        private enum SingleStatus { None, Single, Multiple }
+
+        private static bool SingleImpl<TSource, TEnumerator>(IEnumerable<TSource, TEnumerator> source, out TSource single, out SingleStatus status)
+            where TEnumerator : IEnumerator<TSource>
         {
-            if (source == null) throw Error.ArgumentNull(nameof(source));
-            if (predicate == null) throw Error.ArgumentNull(nameof(predicate));
+            using (var e = source.GetEnumerator())
+            {
+                if (e.MoveNext())
+                {
+                    single = e.Current;
+                    if (!e.MoveNext())
+                    {
+                        status = SingleStatus.Single;
+                        return true;
+                    }
+                    status = SingleStatus.Multiple;
+                    return false;
+                }
+            }
+            single = default(TSource);
+            status = SingleStatus.None;
+            return false;
+        }
+
+        private static bool SingleImpl<TSource, TEnumerator>(IEnumerable<TSource, TEnumerator> source, Func<TSource, bool> predicate, out TSource single, out SingleStatus status)
+            where TEnumerator : IEnumerator<TSource>
+        {
             using (var e = source.GetEnumerator())
             {
                 while (e.MoveNext())
                 {
-                    var element = e.Current;
-                    if (predicate(element))
+                    single = e.Current;
+                    if (predicate(single))
                     {
                         while (e.MoveNext())
                             if (predicate(e.Current))
-                                throw Error.MoreThanOneMatch();
-                        return element;
+                            {
+                                single = default(TSource);
+                                status = SingleStatus.Multiple;
+                                return false;
+                            }
+                        status = SingleStatus.Single;
+                        return true;
                     }
                 }
-                return default(TSource);
             }
+            single = default(TSource);
+            status = SingleStatus.None;
+            return false;
         }
         #endregion
 
         #region Skip
         public static SkipEnumerable<TSource, TEnumerator> Skip<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, int count)
             where TEnumerator : IEnumerator<TSource>
-        {
-            if (source == null) throw Error.ArgumentNull(nameof(source));
-            if (count < 0) throw Error.ArgumentOutOfRange(nameof(count));
-            return new SkipEnumerable<TSource, TEnumerator>(source, count);
-        }
+            => new SkipEnumerable<TSource, TEnumerator>(source ?? throw Error.ArgumentNull(nameof(source)), count >= 0 ? count : throw Error.ArgumentOutOfRange(nameof(count)));
         #endregion
 
         #region SkipWhile
@@ -948,11 +840,7 @@ namespace Inlinq
         #region Take
         public static TakeEnumerable<TSource, TEnumerator> Take<TSource, TEnumerable, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, int count)
             where TEnumerator : IEnumerator<TSource>
-        {
-            if (source == null) throw Error.ArgumentNull(nameof(source));
-            if (count < 0) throw Error.ArgumentOutOfRange(nameof(count));
-            return new TakeEnumerable<TSource, TEnumerator>(source, count);
-        }
+            => new TakeEnumerable<TSource, TEnumerator>(source ?? throw Error.ArgumentNull(nameof(source)), count >= 0 ? count : throw Error.ArgumentOutOfRange(nameof(count)));
         #endregion
 
         #region TakeWhile
@@ -965,29 +853,58 @@ namespace Inlinq
             => new TakeWhileEnumerableB<TSource, TEnumerator>(source ?? throw Error.ArgumentNull(nameof(source)), predicate ?? throw Error.ArgumentNull(nameof(predicate)));
         #endregion
 
-        //public static IOrderedEnumerable<TSource> ThenBy<TSource, TKey>(this IOrderedEnumerable<TSource> source, Func<TSource, TKey> keySelector)
-        //{
-        //    if (source == null) throw Error.ArgumentNull("source");
-        //    return source.CreateOrderedEnumerable<TKey>(keySelector, null, false);
-        //}
+        #region ThenBy
+        public static OrderedEnumerable<TSource, TEnumerator, CompositeKey<TKey1, TKey2>, CompositeComparer<TKey1, TComparer1, TKey2, ComparableComparer<TKey2>>> ThenBy<TSource, TEnumerator, TKey1, TComparer1, TKey2>(this OrderedEnumerable<TSource, TEnumerator, TKey1, TComparer1> source, Func<TSource, TKey2> keySelector)
+            where TEnumerator : IEnumerator<TSource>
+            where TComparer1 : IComparer<TKey1>
+            where TKey2 : IComparable<TKey2>
+            => ThenByImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), new ComparableComparer<TKey2>());
 
-        //public static IOrderedEnumerable<TSource> ThenBy<TSource, TKey>(this IOrderedEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer)
-        //{
-        //    if (source == null) throw Error.ArgumentNull("source");
-        //    return source.CreateOrderedEnumerable<TKey>(keySelector, comparer, false);
-        //}
+        public static OrderedEnumerable<TSource, TEnumerator, CompositeKey<TKey1, TKey2>, CompositeComparer<TKey1, TComparer1, TKey2, IComparer<TKey2>>> ThenBy<TSource, TEnumerator, TKey1, TComparer1, TKey2>(this OrderedEnumerable<TSource, TEnumerator, TKey1, TComparer1> source, Func<TSource, TKey2> keySelector, IComparer<TKey2> comparer)
+            where TEnumerator : IEnumerator<TSource>
+            where TComparer1 : IComparer<TKey1>
+            => ThenByImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer ?? Comparer<TKey2>.Default);
 
-        //public static IOrderedEnumerable<TSource> ThenByDescending<TSource, TKey>(this IOrderedEnumerable<TSource> source, Func<TSource, TKey> keySelector)
-        //{
-        //    if (source == null) throw Error.ArgumentNull("source");
-        //    return source.CreateOrderedEnumerable<TKey>(keySelector, null, true);
-        //}
+        public static OrderedEnumerable<TSource, TEnumerator, CompositeKey<TKey1, TKey2>, CompositeComparer<TKey1, TComparer1, TKey2, TComparer2>> ThenBy<TSource, TEnumerator, TKey1, TComparer1, TKey2, TComparer2>(this OrderedEnumerable<TSource, TEnumerator, TKey1, TComparer1> source, Func<TSource, TKey2> keySelector, TComparer2 comparer)
+            where TEnumerator : IEnumerator<TSource>
+            where TComparer1 : IComparer<TKey1>
+            where TComparer2 : struct, IComparer<TKey2>
+            => ThenByImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer);
 
-        //public static IOrderedEnumerable<TSource> ThenByDescending<TSource, TKey>(this IOrderedEnumerable<TSource> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer)
-        //{
-        //    if (source == null) throw Error.ArgumentNull("source");
-        //    return source.CreateOrderedEnumerable<TKey>(keySelector, comparer, true);
-        //}
+        private static OrderedEnumerable<TSource, TEnumerator, CompositeKey<TKey1, TKey2>, CompositeComparer<TKey1, TComparer1, TKey2, TComparer2>> ThenByImpl<TSource, TEnumerator, TKey1, TComparer1, TKey2, TComparer2>(OrderedEnumerable<TSource, TEnumerator, TKey1, TComparer1> source, Func<TSource, TKey2> keySelector2, TComparer2 comparer2)
+            where TEnumerator : IEnumerator<TSource>
+            where TComparer1 : IComparer<TKey1>
+            where TComparer2 : IComparer<TKey2>
+        {
+            var keySelector1 = source.KeySelector;
+            return new OrderedEnumerable<TSource, TEnumerator, CompositeKey<TKey1, TKey2>, CompositeComparer<TKey1, TComparer1, TKey2, TComparer2>>(source.Source, x => new CompositeKey<TKey1, TKey2>(keySelector1(x), keySelector2(x)), new CompositeComparer<TKey1, TComparer1, TKey2, TComparer2>(source.Comparer, comparer2));
+        }
+        #endregion
+
+        #region ThenByDescending
+        public static OrderedEnumerable<TSource, TEnumerator, CompositeKey<TKey1, TKey2>, CompositeComparer<TKey1, TComparer1, TKey2, ReverseComparer<TKey2, ComparableComparer<TKey2>>>> ThenByDescending<TSource, TEnumerator, TKey1, TComparer1, TKey2>(this OrderedEnumerable<TSource, TEnumerator, TKey1, TComparer1> source, Func<TSource, TKey2> keySelector)
+            where TEnumerator : IEnumerator<TSource>
+            where TComparer1 : IComparer<TKey1>
+            where TKey2 : IComparable<TKey2>
+            => ThenByDescendingImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), new ComparableComparer<TKey2>());
+
+        public static OrderedEnumerable<TSource, TEnumerator, CompositeKey<TKey1, TKey2>, CompositeComparer<TKey1, TComparer1, TKey2, ReverseComparer<TKey2, IComparer<TKey2>>>> ThenByDescending<TSource, TEnumerator, TKey1, TComparer1, TKey2>(this OrderedEnumerable<TSource, TEnumerator, TKey1, TComparer1> source, Func<TSource, TKey2> keySelector, IComparer<TKey2> comparer)
+            where TEnumerator : IEnumerator<TSource>
+            where TComparer1 : IComparer<TKey1>
+            => ThenByDescendingImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer ?? Comparer<TKey2>.Default);
+
+        public static OrderedEnumerable<TSource, TEnumerator, CompositeKey<TKey1, TKey2>, CompositeComparer<TKey1, TComparer1, TKey2, ReverseComparer<TKey2, TComparer2>>> ThenByDescending<TSource, TEnumerator, TKey1, TComparer1, TKey2, TComparer2>(this OrderedEnumerable<TSource, TEnumerator, TKey1, TComparer1> source, Func<TSource, TKey2> keySelector, TComparer2 comparer)
+            where TEnumerator : IEnumerator<TSource>
+            where TComparer1 : IComparer<TKey1>
+            where TComparer2 : struct, IComparer<TKey2>
+            => ThenByDescendingImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer);
+
+        private static OrderedEnumerable<TSource, TEnumerator, CompositeKey<TKey1, TKey2>, CompositeComparer<TKey1, TComparer1, TKey2, ReverseComparer<TKey2, TComparer2>>> ThenByDescendingImpl<TSource, TEnumerator, TKey1, TComparer1, TKey2, TComparer2>(OrderedEnumerable<TSource, TEnumerator, TKey1, TComparer1> source, Func<TSource, TKey2> keySelector2, TComparer2 comparer2)
+            where TEnumerator : IEnumerator<TSource>
+            where TComparer1 : IComparer<TKey1>
+            where TComparer2 : IComparer<TKey2>
+            => ThenByImpl(source, keySelector2, new ReverseComparer<TKey2, TComparer2>(comparer2));
+        #endregion
 
         #region ToArray
         public static TSource[] ToArray<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source)
@@ -1025,13 +942,11 @@ namespace Inlinq
             return d;
         }
 
-        public static Dictionary<TKey, TElement>
-            ToDictionary<TSource, TEnumerator, TKey, TElement>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector)
+        public static Dictionary<TKey, TElement> ToDictionary<TSource, TEnumerator, TKey, TElement>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector)
             where TEnumerator : IEnumerator<TSource>
             => ToDictionary(source, keySelector, elementSelector, null);
 
-        public static Dictionary<TKey, TElement>
-            ToDictionary<TSource, TEnumerator, TKey, TElement>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, IEqualityComparer<TKey> comparer)
+        public static Dictionary<TKey, TElement> ToDictionary<TSource, TEnumerator, TKey, TElement>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, IEqualityComparer<TKey> comparer)
             where TEnumerator : IEnumerator<TSource>
         {
             if (source == null) throw Error.ArgumentNull(nameof(source));
@@ -1067,100 +982,57 @@ namespace Inlinq
         public static Lookup<TKey, TSource, EquatableEqualityComparer<TKey>> ToLookup<TSource, TKey, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector)
             where TKey : IEquatable<TKey>
             where TEnumerator : IEnumerator<TSource>
-        {
-            return Lookup<TKey, TSource, EquatableEqualityComparer<TKey>>.Create(
-                source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)),
-                Util.Identity<TSource>(), new EquatableEqualityComparer<TKey>());
-        }
+            => ToLookupImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), Util.Identity<TSource>(), new EquatableEqualityComparer<TKey>());
 
-        public static Lookup<TKey, TSource, IEqualityComparer<TKey>>
-            ToLookup<TSource, TKey, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, IEqualityComparer<TKey> comparer)
+        public static Lookup<TKey, TSource, IEqualityComparer<TKey>> ToLookup<TSource, TKey, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, IEqualityComparer<TKey> comparer)
             where TEnumerator : IEnumerator<TSource>
-        {
-            return Lookup<TKey, TSource, IEqualityComparer<TKey>>.Create(
-                source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)),
-                Util.Identity<TSource>(), comparer ?? EqualityComparer<TKey>.Default);
-        }
+            => ToLookupImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), Util.Identity<TSource>(), comparer ?? EqualityComparer<TKey>.Default);
 
-        public static Lookup<TKey, TSource, TEqualityComparer>
-            ToLookup<TSource, TKey, TEnumerator, TEqualityComparer>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, TEqualityComparer comparer)
+        public static Lookup<TKey, TSource, TEqualityComparer> ToLookup<TSource, TKey, TEnumerator, TEqualityComparer>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, TEqualityComparer comparer)
             where TEnumerator : IEnumerator<TSource>
             where TEqualityComparer : struct, IEqualityComparer<TKey>
-        {
-            return Lookup<TKey, TSource, TEqualityComparer>.Create(
-                source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), Util.Identity<TSource>(), comparer);
-        }
+            => ToLookupImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), Util.Identity<TSource>(), comparer);
 
-        public static Lookup<TKey, TElement, EquatableEqualityComparer<TKey>>
-            ToLookup<TSource, TKey, TElement, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector)
+        public static Lookup<TKey, TElement, EquatableEqualityComparer<TKey>> ToLookup<TSource, TKey, TElement, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector)
             where TKey : IEquatable<TKey>
             where TEnumerator : IEnumerator<TSource>
-        {
-            return Lookup<TKey, TElement, EquatableEqualityComparer<TKey>>.Create(
-                source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)),
-                elementSelector ?? throw Error.ArgumentNull(nameof(elementSelector)), new EquatableEqualityComparer<TKey>());
-        }
+            => ToLookupImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), elementSelector ?? throw Error.ArgumentNull(nameof(elementSelector)), new EquatableEqualityComparer<TKey>());
 
-        public static Lookup<TKey, TElement, IEqualityComparer<TKey>>
-            ToLookup<TSource, TKey, TElement, TEnumerator>(this IEnumerable<TSource, TEnumerator> source,
-            Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, IEqualityComparer<TKey> comparer)
+        public static Lookup<TKey, TElement, IEqualityComparer<TKey>> ToLookup<TSource, TKey, TElement, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, IEqualityComparer<TKey> comparer)
             where TEnumerator : IEnumerator<TSource>
-        {
-            return Lookup<TKey, TElement, IEqualityComparer<TKey>>.Create(
-                source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)),
-                elementSelector ?? throw Error.ArgumentNull(nameof(elementSelector)), comparer ?? EqualityComparer<TKey>.Default);
-        }
+            => ToLookupImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), elementSelector ?? throw Error.ArgumentNull(nameof(elementSelector)), comparer ?? EqualityComparer<TKey>.Default);
 
-        public static Lookup<TKey, TElement, TEqualityComparer>
-            ToLookup<TSource, TKey, TElement, TEnumerator, TEqualityComparer>(this IEnumerable<TSource, TEnumerator> source,
-            Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, TEqualityComparer comparer)
+        public static Lookup<TKey, TElement, TEqualityComparer> ToLookup<TSource, TKey, TElement, TEnumerator, TEqualityComparer>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, TEqualityComparer comparer)
             where TEnumerator : IEnumerator<TSource>
             where TEqualityComparer : struct, IEqualityComparer<TKey>
-        {
-            return Lookup<TKey, TElement, TEqualityComparer>.Create(
-                source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)),
-                elementSelector ?? throw Error.ArgumentNull(nameof(elementSelector)), comparer);
-        }
+            => ToLookupImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), elementSelector ?? throw Error.ArgumentNull(nameof(elementSelector)), comparer);
 
         #region String key optimization
         public static Lookup<string, TSource, Cmp.StringComparer> ToLookup<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, string> keySelector)
             where TEnumerator : IEnumerator<TSource>
-        {
-            return Lookup<string, TSource, Cmp.StringComparer>.Create(
-                source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), Util.Identity<TSource>(), new Cmp.StringComparer());
-        }
+            => ToLookupImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), Util.Identity<TSource>(), new Cmp.StringComparer());
 
-        public static Lookup<string, TElement, Cmp.StringComparer>
-            ToLookup<TSource, TElement, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, string> keySelector, Func<TSource, TElement> elementSelector)
+        public static Lookup<string, TElement, Cmp.StringComparer> ToLookup<TSource, TElement, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, string> keySelector, Func<TSource, TElement> elementSelector)
             where TEnumerator : IEnumerator<TSource>
-        {
-            return Lookup<string, TElement, Cmp.StringComparer>.Create(
-                source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)),
-                elementSelector ?? throw Error.ArgumentNull(nameof(elementSelector)), new Cmp.StringComparer());
-        }
+            => ToLookupImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), elementSelector ?? throw Error.ArgumentNull(nameof(elementSelector)), new Cmp.StringComparer());
         #endregion
 
         #region Nullable key optimization
-        public static Lookup<TKey?, TSource, NullableEqualityComparer<TKey, EquatableEqualityComparer<TKey>>>
-            ToLookup<TSource, TKey, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey?> keySelector)
+        public static Lookup<TKey?, TSource, NullableEqualityComparer<TKey>> ToLookup<TSource, TKey, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey?> keySelector)
             where TKey : struct, IEquatable<TKey>
             where TEnumerator : IEnumerator<TSource>
-        {
-            return Lookup<TKey?, TSource, NullableEqualityComparer<TKey, EquatableEqualityComparer<TKey>>>.Create(
-                source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)),
-                Util.Identity<TSource>(), new NullableEqualityComparer<TKey, EquatableEqualityComparer<TKey>>(new EquatableEqualityComparer<TKey>()));
-        }
+            => ToLookupImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), Util.Identity<TSource>(), new NullableEqualityComparer<TKey>());
 
-        public static Lookup<TKey?, TElement, NullableEqualityComparer<TKey, EquatableEqualityComparer<TKey>>>
-            ToLookup<TSource, TKey, TElement, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey?> keySelector, Func<TSource, TElement> elementSelector)
+        public static Lookup<TKey?, TElement, NullableEqualityComparer<TKey>> ToLookup<TSource, TKey, TElement, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey?> keySelector, Func<TSource, TElement> elementSelector)
             where TKey : struct, IEquatable<TKey>
             where TEnumerator : IEnumerator<TSource>
-        {
-            return Lookup<TKey?, TElement, NullableEqualityComparer<TKey, EquatableEqualityComparer<TKey>>>.Create(
-                source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)),
-                elementSelector ?? throw Error.ArgumentNull(nameof(elementSelector)), new NullableEqualityComparer<TKey, EquatableEqualityComparer<TKey>>(new EquatableEqualityComparer<TKey>()));
-        }
+            => ToLookupImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), elementSelector ?? throw Error.ArgumentNull(nameof(elementSelector)), new NullableEqualityComparer<TKey>());
         #endregion
+
+        private static Lookup<TKey, TElement, TEqualityComparer> ToLookupImpl<TSource, TKey, TElement, TEnumerator, TEqualityComparer>(IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, Func<TSource, TElement> elementSelector, TEqualityComparer comparer)
+            where TEnumerator : IEnumerator<TSource>
+            where TEqualityComparer : IEqualityComparer<TKey>
+            => Lookup<TKey, TElement, TEqualityComparer>.Create(source, keySelector, elementSelector, comparer);
         #endregion
 
         #region Where
@@ -1170,15 +1042,10 @@ namespace Inlinq
         #endregion
 
         #region Zip
-        public static ZipEnumerable<TFirst, TSecond, TResult, TEnumerator1, TEnumerator2>
-            Zip<TFirst, TSecond, TResult, TEnumerator1, TEnumerator2>(this IEnumerable<TFirst, TEnumerator1> first,
-            IEnumerable<TSecond, TEnumerator2> second, Func<TFirst, TSecond, TResult> resultSelector)
+        public static ZipEnumerable<TFirst, TSecond, TResult, TEnumerator1, TEnumerator2> Zip<TFirst, TSecond, TResult, TEnumerator1, TEnumerator2>(this IEnumerable<TFirst, TEnumerator1> first, IEnumerable<TSecond, TEnumerator2> second, Func<TFirst, TSecond, TResult> resultSelector)
             where TEnumerator1 : IEnumerator<TFirst>
             where TEnumerator2 : IEnumerator<TSecond>
-        {
-            return new ZipEnumerable<TFirst, TSecond, TResult, TEnumerator1, TEnumerator2>(
-                first ?? throw Error.ArgumentNull(nameof(first)), second ?? throw Error.ArgumentNull(nameof(second)), resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector)));
-        }
+            => new ZipEnumerable<TFirst, TSecond, TResult, TEnumerator1, TEnumerator2>(first ?? throw Error.ArgumentNull(nameof(first)), second ?? throw Error.ArgumentNull(nameof(second)), resultSelector ?? throw Error.ArgumentNull(nameof(resultSelector)));
         #endregion
     }
 }
