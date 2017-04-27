@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Inlinq.Impl;
 using Inlinq.Cmp;
+using Inlinq.Sort;
 
 namespace Inlinq
 {
@@ -568,68 +569,68 @@ namespace Inlinq
         #endregion
 
         #region OrderBy
-        public static OrderedEnumerable<TSource, TEnumerator, TKey, ComparableComparer<TKey>> OrderBy<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector)
+        public static OrderedEnumerable<TSource, TEnumerator> OrderBy<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector)
             where TEnumerator : IEnumerator<TSource>
             where TKey : IComparable<TKey>
             => OrderBy(source, keySelector, new ComparableComparer<TKey>());
 
-        public static OrderedEnumerable<TSource, TEnumerator, TKey, TComparer> OrderBy<TSource, TEnumerator, TKey, TComparer>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, TComparer comparer)
+        public static OrderedEnumerable<TSource, TEnumerator> OrderBy<TSource, TEnumerator, TKey, TComparer>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, TComparer comparer)
             where TEnumerator : IEnumerator<TSource>
             where TComparer : struct, IComparer<TKey>
             => OrderByImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer);
 
-        public static OrderedEnumerable<TSource, TEnumerator, TKey, IComparer<TKey>> OrderBy<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer)
+        public static OrderedEnumerable<TSource, TEnumerator> OrderBy<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer)
             where TEnumerator : IEnumerator<TSource>
             => OrderByImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer ?? Comparer<TKey>.Default);
 
         #region String key optimization
-        public static OrderedEnumerable<TSource, TEnumerator, string, Cmp.StringComparer> OrderBy<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, string> keySelector)
+        public static OrderedEnumerable<TSource, TEnumerator> OrderBy<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, string> keySelector)
             where TEnumerator : IEnumerator<TSource>
             => OrderBy(source, keySelector, new Cmp.StringComparer());
         #endregion
 
         #region Nullable key optimization
-        public static OrderedEnumerable<TSource, TEnumerator, TKey?, NullableComparer<TKey>> OrderBy<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey?> keySelector)
+        public static OrderedEnumerable<TSource, TEnumerator> OrderBy<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey?> keySelector)
             where TEnumerator : IEnumerator<TSource>
             where TKey : struct, IComparable<TKey>
             => OrderBy(source, keySelector, new NullableComparer<TKey>());
         #endregion
 
-        private static OrderedEnumerable<TSource, TEnumerator, TKey, TComparer> OrderByImpl<TSource, TEnumerator, TKey, TComparer>(IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, TComparer comparer)
+        private static OrderedEnumerable<TSource, TEnumerator> OrderByImpl<TSource, TEnumerator, TKey, TComparer>(IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, TComparer comparer)
             where TEnumerator : IEnumerator<TSource>
             where TComparer : IComparer<TKey>
-            => new OrderedEnumerable<TSource, TEnumerator, TKey, TComparer>(source, keySelector, comparer);
+            => new OrderedEnumerable<TSource, TEnumerator>(source, new PrimaryTerminalSort<TSource, TEnumerator, TKey, TComparer>(keySelector, comparer));
         #endregion
 
         #region OrderByDescending
-        public static OrderedEnumerable<TSource, TEnumerator, TKey, ReverseComparer<TKey, ComparableComparer<TKey>>> OrderByDescending<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector)
+        public static OrderedEnumerable<TSource, TEnumerator> OrderByDescending<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector)
             where TEnumerator : IEnumerator<TSource>
             where TKey : IComparable<TKey>
             => OrderByDescending(source, keySelector, new ComparableComparer<TKey>());
 
-        public static OrderedEnumerable<TSource, TEnumerator, TKey, ReverseComparer<TKey, TComparer>> OrderByDescending<TSource, TEnumerator, TKey, TComparer>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, TComparer comparer)
+        public static OrderedEnumerable<TSource, TEnumerator> OrderByDescending<TSource, TEnumerator, TKey, TComparer>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, TComparer comparer)
             where TEnumerator : IEnumerator<TSource>
             where TComparer : struct, IComparer<TKey>
             => OrderByDescendingImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer);
 
-        public static OrderedEnumerable<TSource, TEnumerator, TKey, ReverseComparer<TKey, IComparer<TKey>>> OrderByDescending<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer)
+        public static OrderedEnumerable<TSource, TEnumerator> OrderByDescending<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer)
             where TEnumerator : IEnumerator<TSource>
             => OrderByDescendingImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer ?? Comparer<TKey>.Default);
 
         #region String key optimization
-        public static OrderedEnumerable<TSource, TEnumerator, string, ReverseComparer<string, Cmp.StringComparer>> OrderByDescending<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, string> keySelector)
+        public static OrderedEnumerable<TSource, TEnumerator> OrderByDescending<TSource, TEnumerator>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, string> keySelector)
             where TEnumerator : IEnumerator<TSource>
             => OrderByDescending(source, keySelector, new Cmp.StringComparer());
         #endregion
 
         #region Nullable key optimization
-        public static OrderedEnumerable<TSource, TEnumerator, TKey?, ReverseComparer<TKey?, NullableComparer<TKey>>> OrderByDescending<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey?> keySelector)
+        public static OrderedEnumerable<TSource, TEnumerator> OrderByDescending<TSource, TEnumerator, TKey>(this IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey?> keySelector)
             where TEnumerator : IEnumerator<TSource>
             where TKey : struct, IComparable<TKey>
             => OrderByDescending(source, keySelector, new NullableComparer<TKey>());
         #endregion
 
-        private static OrderedEnumerable<TSource, TEnumerator, TKey, ReverseComparer<TKey, TComparer>> OrderByDescendingImpl<TSource, TEnumerator, TKey, TComparer>(IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, TComparer comparer)
+        private static OrderedEnumerable<TSource, TEnumerator> OrderByDescendingImpl<TSource, TEnumerator, TKey, TComparer>(IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, TComparer comparer)
             where TEnumerator : IEnumerator<TSource>
             where TComparer : IComparer<TKey>
             => OrderByImpl(source, keySelector, new ReverseComparer<TKey, TComparer>(comparer));
@@ -854,56 +855,67 @@ namespace Inlinq
         #endregion
 
         #region ThenBy
-        public static OrderedEnumerable<TSource, TEnumerator, CompositeKey<TKey1, TKey2>, CompositeComparer<TKey1, TComparer1, TKey2, ComparableComparer<TKey2>>> ThenBy<TSource, TEnumerator, TKey1, TComparer1, TKey2>(this OrderedEnumerable<TSource, TEnumerator, TKey1, TComparer1> source, Func<TSource, TKey2> keySelector)
+        public static OrderedEnumerable<TSource, TEnumerator> ThenBy<TSource, TEnumerator, TKey>(this OrderedEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector)
             where TEnumerator : IEnumerator<TSource>
-            where TComparer1 : IComparer<TKey1>
-            where TKey2 : IComparable<TKey2>
-            => ThenByImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), new ComparableComparer<TKey2>());
+            where TKey : IComparable<TKey>
+            => (source ?? throw Error.ArgumentNull(nameof(source))).ThenByImpl(keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), new ComparableComparer<TKey>());
 
-        public static OrderedEnumerable<TSource, TEnumerator, CompositeKey<TKey1, TKey2>, CompositeComparer<TKey1, TComparer1, TKey2, IComparer<TKey2>>> ThenBy<TSource, TEnumerator, TKey1, TComparer1, TKey2>(this OrderedEnumerable<TSource, TEnumerator, TKey1, TComparer1> source, Func<TSource, TKey2> keySelector, IComparer<TKey2> comparer)
+        public static OrderedEnumerable<TSource, TEnumerator> ThenBy<TSource, TEnumerator, TKey>(this OrderedEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer)
             where TEnumerator : IEnumerator<TSource>
-            where TComparer1 : IComparer<TKey1>
-            => ThenByImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer ?? Comparer<TKey2>.Default);
+            => (source ?? throw Error.ArgumentNull(nameof(source))).ThenByImpl(keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer ?? Comparer<TKey>.Default);
 
-        public static OrderedEnumerable<TSource, TEnumerator, CompositeKey<TKey1, TKey2>, CompositeComparer<TKey1, TComparer1, TKey2, TComparer2>> ThenBy<TSource, TEnumerator, TKey1, TComparer1, TKey2, TComparer2>(this OrderedEnumerable<TSource, TEnumerator, TKey1, TComparer1> source, Func<TSource, TKey2> keySelector, TComparer2 comparer)
+        public static OrderedEnumerable<TSource, TEnumerator> ThenBy<TSource, TEnumerator, TKey, TComparer>(this OrderedEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, TComparer comparer)
             where TEnumerator : IEnumerator<TSource>
-            where TComparer1 : IComparer<TKey1>
-            where TComparer2 : struct, IComparer<TKey2>
-            => ThenByImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer);
+            where TComparer : struct, IComparer<TKey>
+            => (source ?? throw Error.ArgumentNull(nameof(source))).ThenByImpl(keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer);
 
-        private static OrderedEnumerable<TSource, TEnumerator, CompositeKey<TKey1, TKey2>, CompositeComparer<TKey1, TComparer1, TKey2, TComparer2>> ThenByImpl<TSource, TEnumerator, TKey1, TComparer1, TKey2, TComparer2>(OrderedEnumerable<TSource, TEnumerator, TKey1, TComparer1> source, Func<TSource, TKey2> keySelector2, TComparer2 comparer2)
+        #region String key optimization
+        public static OrderedEnumerable<TSource, TEnumerator> ThenBy<TSource, TEnumerator>(this OrderedEnumerable<TSource, TEnumerator> source, Func<TSource, string> keySelector)
             where TEnumerator : IEnumerator<TSource>
-            where TComparer1 : IComparer<TKey1>
-            where TComparer2 : IComparer<TKey2>
-        {
-            var keySelector1 = source.KeySelector;
-            return new OrderedEnumerable<TSource, TEnumerator, CompositeKey<TKey1, TKey2>, CompositeComparer<TKey1, TComparer1, TKey2, TComparer2>>(source.Source, x => new CompositeKey<TKey1, TKey2>(keySelector1(x), keySelector2(x)), new CompositeComparer<TKey1, TComparer1, TKey2, TComparer2>(source.Comparer, comparer2));
-        }
+            => ThenBy(source, keySelector, new Cmp.StringComparer());
+        #endregion
+
+        #region Nullable key optimization
+        public static OrderedEnumerable<TSource, TEnumerator> ThenBy<TSource, TEnumerator, TKey>(this OrderedEnumerable<TSource, TEnumerator> source, Func<TSource, TKey?> keySelector)
+            where TEnumerator : IEnumerator<TSource>
+            where TKey : struct, IComparable<TKey>
+            => ThenBy(source, keySelector, new NullableComparer<TKey>());
+        #endregion
         #endregion
 
         #region ThenByDescending
-        public static OrderedEnumerable<TSource, TEnumerator, CompositeKey<TKey1, TKey2>, CompositeComparer<TKey1, TComparer1, TKey2, ReverseComparer<TKey2, ComparableComparer<TKey2>>>> ThenByDescending<TSource, TEnumerator, TKey1, TComparer1, TKey2>(this OrderedEnumerable<TSource, TEnumerator, TKey1, TComparer1> source, Func<TSource, TKey2> keySelector)
+        public static OrderedEnumerable<TSource, TEnumerator> ThenByDescending<TSource, TEnumerator, TKey>(this OrderedEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector)
             where TEnumerator : IEnumerator<TSource>
-            where TComparer1 : IComparer<TKey1>
-            where TKey2 : IComparable<TKey2>
-            => ThenByDescendingImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), new ComparableComparer<TKey2>());
+            where TKey : IComparable<TKey>
+            => ThenByDescendingImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), new ComparableComparer<TKey>());
 
-        public static OrderedEnumerable<TSource, TEnumerator, CompositeKey<TKey1, TKey2>, CompositeComparer<TKey1, TComparer1, TKey2, ReverseComparer<TKey2, IComparer<TKey2>>>> ThenByDescending<TSource, TEnumerator, TKey1, TComparer1, TKey2>(this OrderedEnumerable<TSource, TEnumerator, TKey1, TComparer1> source, Func<TSource, TKey2> keySelector, IComparer<TKey2> comparer)
+        public static OrderedEnumerable<TSource, TEnumerator> ThenByDescending<TSource, TEnumerator, TKey>(this OrderedEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, IComparer<TKey> comparer)
             where TEnumerator : IEnumerator<TSource>
-            where TComparer1 : IComparer<TKey1>
-            => ThenByDescendingImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer ?? Comparer<TKey2>.Default);
+            => ThenByDescendingImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer ?? Comparer<TKey>.Default);
 
-        public static OrderedEnumerable<TSource, TEnumerator, CompositeKey<TKey1, TKey2>, CompositeComparer<TKey1, TComparer1, TKey2, ReverseComparer<TKey2, TComparer2>>> ThenByDescending<TSource, TEnumerator, TKey1, TComparer1, TKey2, TComparer2>(this OrderedEnumerable<TSource, TEnumerator, TKey1, TComparer1> source, Func<TSource, TKey2> keySelector, TComparer2 comparer)
+        public static OrderedEnumerable<TSource, TEnumerator> ThenByDescending<TSource, TEnumerator, TKey1, TComparer1, TKey2, TComparer2>(this OrderedEnumerable<TSource, TEnumerator> source, Func<TSource, TKey2> keySelector, TComparer2 comparer)
             where TEnumerator : IEnumerator<TSource>
             where TComparer1 : IComparer<TKey1>
             where TComparer2 : struct, IComparer<TKey2>
             => ThenByDescendingImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer);
 
-        private static OrderedEnumerable<TSource, TEnumerator, CompositeKey<TKey1, TKey2>, CompositeComparer<TKey1, TComparer1, TKey2, ReverseComparer<TKey2, TComparer2>>> ThenByDescendingImpl<TSource, TEnumerator, TKey1, TComparer1, TKey2, TComparer2>(OrderedEnumerable<TSource, TEnumerator, TKey1, TComparer1> source, Func<TSource, TKey2> keySelector2, TComparer2 comparer2)
+        #region String key optimization
+        public static OrderedEnumerable<TSource, TEnumerator> ThenByDescending<TSource, TEnumerator>(this OrderedEnumerable<TSource, TEnumerator> source, Func<TSource, string> keySelector)
             where TEnumerator : IEnumerator<TSource>
-            where TComparer1 : IComparer<TKey1>
-            where TComparer2 : IComparer<TKey2>
-            => ThenByImpl(source, keySelector2, new ReverseComparer<TKey2, TComparer2>(comparer2));
+            => ThenByDescending(source, keySelector, new Cmp.StringComparer());
+        #endregion
+
+        #region Nullable key optimization
+        public static OrderedEnumerable<TSource, TEnumerator> ThenByDescending<TSource, TEnumerator, TKey>(this OrderedEnumerable<TSource, TEnumerator> source, Func<TSource, TKey?> keySelector)
+            where TEnumerator : IEnumerator<TSource>
+            where TKey : struct, IComparable<TKey>
+            => ThenByDescending(source, keySelector, new NullableComparer<TKey>());
+        #endregion
+
+        private static OrderedEnumerable<TSource, TEnumerator> ThenByDescendingImpl<TSource, TEnumerator, TKey, TComparer>(OrderedEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, TComparer comparer)
+            where TEnumerator : IEnumerator<TSource>
+            where TComparer : IComparer<TKey>
+            => source.ThenByImpl(keySelector, new ReverseComparer<TKey, TComparer>(comparer));
         #endregion
 
         #region ToArray

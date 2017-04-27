@@ -1,30 +1,28 @@
-﻿using System;
+﻿using Inlinq.Sort;
+using System;
 using System.Collections.Generic;
 
 namespace Inlinq.Impl
 {
-    public sealed class OrderedEnumerable<T, TEnumerator, TKey, TComparer> : Enumerable<T, OrderedEnumerator<T, TEnumerator, TKey, TComparer>>
+    public sealed class OrderedEnumerable<T, TEnumerator> : Enumerable<T, OrderedEnumerator<T, TEnumerator>>
         where TEnumerator : IEnumerator<T>
-        where TComparer : IComparer<TKey>
     {
         private IEnumerable<T, TEnumerator> source;
-        private Func<T, TKey> keySelector;
-        private TComparer comparer;
+        private IPrimarySort<T, TEnumerator> primarySort;
 
-        public IEnumerable<T, TEnumerator> Source => source;
-        public Func<T, TKey> KeySelector => keySelector;
-        public TComparer Comparer => comparer;
-
-        public OrderedEnumerable(IEnumerable<T, TEnumerator> source, Func<T, TKey> keySelector, TComparer comparer)
+        internal OrderedEnumerable(IEnumerable<T, TEnumerator> source, IPrimarySort<T, TEnumerator> primarySort)
         {
             this.source = source;
-            this.keySelector = keySelector;
-            this.comparer = comparer;
+            this.primarySort = primarySort;
         }
+
+        internal OrderedEnumerable<T, TEnumerator> ThenByImpl<TKey, TComparer>(Func<T, TKey> keySelector, TComparer comparer)
+            where TComparer : IComparer<TKey>
+            => new OrderedEnumerable<T, TEnumerator>(source, primarySort.Chain(keySelector, comparer));
 
         public override bool GetCount(out int count) => source.GetCount(out count);
 
-        public override OrderedEnumerator<T, TEnumerator, TKey, TComparer> GetEnumerator()
-            => new OrderedEnumerator<T, TEnumerator, TKey, TComparer>(source, keySelector, comparer);
+        public override OrderedEnumerator<T, TEnumerator> GetEnumerator()
+            => new OrderedEnumerator<T, TEnumerator>(source, primarySort);
     }
 }

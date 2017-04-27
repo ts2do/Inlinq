@@ -38,7 +38,7 @@ namespace Inlinq.Impl
                     state = EnumeratorState.Started;
                     while (source.MoveNext())
                         if (!predicate(source.Current))
-                            goto case EnumeratorState.Started;
+                            return true;
 
                     state = EnumeratorState.Ended;
                     break;
