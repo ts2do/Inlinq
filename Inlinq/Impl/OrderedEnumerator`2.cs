@@ -9,14 +9,14 @@ namespace Inlinq.Impl
         where TEnumerator : IEnumerator<T>
     {
         private IEnumerable<T, TEnumerator> source;
-        private IPrimarySort<T, TEnumerator> primarySort;
+        private IPrimarySort<T> primarySort;
         private SortedArray<T> items;
         private int index;
 
         public T Current
             => index.LtUn(items.count) ? items.items[index].element : throw Error.EnumerableStateException(index.GtUn(items.count));
 
-        internal OrderedEnumerator(IEnumerable<T, TEnumerator> source, IPrimarySort<T, TEnumerator> primarySort)
+        internal OrderedEnumerator(IEnumerable<T, TEnumerator> source, IPrimarySort<T> primarySort)
         {
             this.source = source;
             this.primarySort = primarySort;

@@ -8,9 +8,9 @@ namespace Inlinq.Impl
         where TEnumerator : IEnumerator<T>
     {
         private IEnumerable<T, TEnumerator> source;
-        private IPrimarySort<T, TEnumerator> primarySort;
+        private IPrimarySort<T> primarySort;
 
-        internal OrderedEnumerable(IEnumerable<T, TEnumerator> source, IPrimarySort<T, TEnumerator> primarySort)
+        internal OrderedEnumerable(IEnumerable<T, TEnumerator> source, IPrimarySort<T> primarySort)
         {
             this.source = source;
             this.primarySort = primarySort;

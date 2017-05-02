@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Inlinq.Sort
 {
-    internal struct SecondaryChainedSort<T, TKey, TComparer, TNextSort, TNextAux> : ISecondaryChainedSort<T, SecondaryChainedKey<TKey, TNextAux>>
+    internal struct SecondaryChainedSort<T, TKey, TComparer, TNextSort, TNextAux> : ISecondaryChainedSort<T>, ISecondarySort<T, SecondaryChainedKey<TKey, TNextAux>>
         where TComparer : IComparer<TKey>
         where TNextSort : ISecondarySort<T, TNextAux>
     {
@@ -50,8 +50,7 @@ namespace Inlinq.Sort
         public ISecondaryChainedSort<T> InvertRebind(ISecondaryChainedSort<T> outer)
             => outer.Rebind(this, default(SecondaryChainedKey<TKey, TNextAux>));
 
-        public IPrimaryChainedSort<T, TEnumerator> InvertRebind<TEnumerator>(IPrimaryChainedSort<T, TEnumerator> outer)
-            where TEnumerator : IEnumerator<T>
+        public IPrimaryChainedSort<T> InvertRebind(IPrimaryChainedSort<T> outer)
             => outer.Rebind(this, default(SecondaryChainedKey<TKey, TNextAux>));
 
         public ISecondaryChainedSort<T> Rebind<TNextSort1, TNextAux1>(TNextSort1 nextSort, TNextAux1 nextAux)

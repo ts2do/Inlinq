@@ -599,7 +599,7 @@ namespace Inlinq
         private static OrderedEnumerable<TSource, TEnumerator> OrderByImpl<TSource, TEnumerator, TKey, TComparer>(IEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, TComparer comparer)
             where TEnumerator : IEnumerator<TSource>
             where TComparer : IComparer<TKey>
-            => new OrderedEnumerable<TSource, TEnumerator>(source, new PrimaryTerminalSort<TSource, TEnumerator, TKey, TComparer>(keySelector, comparer));
+            => new OrderedEnumerable<TSource, TEnumerator>(source, new PrimaryTerminalSort<TSource, TKey, TComparer>(keySelector, comparer));
         #endregion
 
         #region OrderByDescending

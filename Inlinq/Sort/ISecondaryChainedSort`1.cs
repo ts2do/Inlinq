@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Inlinq.Sort
+﻿namespace Inlinq.Sort
 {
     internal interface ISecondaryChainedSort<T> : ISecondarySort<T>
     {

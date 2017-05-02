@@ -45,8 +45,7 @@ namespace Inlinq.Sort
         public ISecondaryChainedSort<T> InvertRebind(ISecondaryChainedSort<T> outer)
             => outer.Rebind(this, default(SecondaryKey<TKey>));
 
-        public IPrimaryChainedSort<T, TEnumerator> InvertRebind<TEnumerator>(IPrimaryChainedSort<T, TEnumerator> outer)
-            where TEnumerator : IEnumerator<T>
+        public IPrimaryChainedSort<T> InvertRebind(IPrimaryChainedSort<T> outer)
             => outer.Rebind(this, default(SecondaryKey<TKey>));
     }
 }

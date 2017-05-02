@@ -8,7 +8,7 @@ namespace Inlinq.Sort
     {
         public static SortedArray<T> Sort<TEnumerator, TSort, TAux>(IEnumerable<T, TEnumerator> source, TSort sort, TAux aux)
             where TEnumerator : IEnumerator<T>
-            where TSort : struct, IPrimarySort<T, TEnumerator, TAux>
+            where TSort : IPrimarySort<T, TAux>
         {
             var sorter = new Sorter<TEnumerator, TSort, TAux> { sort = sort };
             sorter.Sort(source);
@@ -17,7 +17,7 @@ namespace Inlinq.Sort
 
         private struct Sorter<TEnumerator, TSort, TAux>
             where TEnumerator : IEnumerator<T>
-            where TSort : struct, IPrimarySort<T, TEnumerator, TAux>
+            where TSort : IPrimarySort<T, TAux>
         {
             public TSort sort;
             public int count;

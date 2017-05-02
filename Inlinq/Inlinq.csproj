@@ -96,10 +96,8 @@
     <Compile Include="Cmp\NullableEqualityComparer`1.cs" />
     <Compile Include="Cmp\ReverseComparer`2.cs" />
     <Compile Include="Cmp\StringComparer.cs" />
-    <Compile Include="Sort\IPrimaryChainedSort`3.cs" />
-    <Compile Include="Sort\ISecondaryChainedSort`2.cs" />
     <Compile Include="Sort\ISecondaryChainedSort`1.cs" />
-    <Compile Include="Sort\IPrimarySort`2.cs" />
+    <Compile Include="Sort\IPrimarySort`1.cs" />
     <Compile Include="Sort\ISecondarySort`1.cs" />
     <Compile Include="Sort\ISecondarySort`2.cs" />
     <Compile Include="Sort\IPrimaryChainedSort`2.cs" />
@@ -163,8 +161,8 @@
     <Compile Include="Impl\List`2.cs" />
     <Compile Include="Impl\OfTypeEnumerable`2.cs" />
     <Compile Include="Impl\OfTypeEnumerator`2.cs" />
-    <Compile Include="Impl\OrderedEnumerable`3.cs" />
-    <Compile Include="Impl\OrderedEnumerator`4.cs" />
+    <Compile Include="Impl\OrderedEnumerable`2.cs" />
+    <Compile Include="Impl\OrderedEnumerator`2.cs" />
     <Compile Include="Impl\Range32Enumerable.cs" />
     <Compile Include="Impl\Range32Enumerator.cs" />
     <Compile Include="Impl\Range64Enumerable.cs" />
@@ -218,8 +216,8 @@
     <Compile Include="Inlinqer.Int64.cs" />
     <Compile Include="Inlinqer.Single.cs" />
     <Compile Include="Inlinqer.SystemConverters.cs" />
-    <Compile Include="Sort\IPrimarySort`3.cs" />
-    <Compile Include="Sort\PrimaryChainedSort`6.cs" />
+    <Compile Include="Sort\IPrimarySort`2.cs" />
+    <Compile Include="Sort\PrimaryChainedSort`5.cs" />
     <Compile Include="Sort\SortUtil`1.cs" />
     <Compile Include="Lookup`3.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

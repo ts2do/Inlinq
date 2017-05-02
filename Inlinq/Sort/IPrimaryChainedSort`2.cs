@@ -1,11 +1,8 @@
-﻿using System.Collections.Generic;
-
-namespace Inlinq.Sort
+﻿namespace Inlinq.Sort
 {
-    internal interface IPrimaryChainedSort<T, TEnumerator> : IPrimarySort<T, TEnumerator>
-        where TEnumerator : IEnumerator<T>
+    internal interface IPrimaryChainedSort<T> : IPrimarySort<T>
     {
-        IPrimaryChainedSort<T, TEnumerator> Rebind<TNextSort, TNextAux>(TNextSort nextSort, TNextAux nextAux)
+        IPrimaryChainedSort<T> Rebind<TNextSort, TNextAux>(TNextSort nextSort, TNextAux nextAux)
             where TNextSort : ISecondarySort<T, TNextAux>;
     }
 }
