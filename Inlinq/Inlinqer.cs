@@ -893,10 +893,9 @@ namespace Inlinq
             where TEnumerator : IEnumerator<TSource>
             => ThenByDescendingImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer ?? Comparer<TKey>.Default);
 
-        public static OrderedEnumerable<TSource, TEnumerator> ThenByDescending<TSource, TEnumerator, TKey1, TComparer1, TKey2, TComparer2>(this OrderedEnumerable<TSource, TEnumerator> source, Func<TSource, TKey2> keySelector, TComparer2 comparer)
+        public static OrderedEnumerable<TSource, TEnumerator> ThenByDescending<TSource, TEnumerator, TKey, TComparer>(this OrderedEnumerable<TSource, TEnumerator> source, Func<TSource, TKey> keySelector, TComparer comparer)
             where TEnumerator : IEnumerator<TSource>
-            where TComparer1 : IComparer<TKey1>
-            where TComparer2 : struct, IComparer<TKey2>
+            where TComparer : struct, IComparer<TKey>
             => ThenByDescendingImpl(source ?? throw Error.ArgumentNull(nameof(source)), keySelector ?? throw Error.ArgumentNull(nameof(keySelector)), comparer);
 
         #region String key optimization

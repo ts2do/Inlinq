@@ -22,23 +22,6 @@ namespace Inlinq.Sort
             public TSort sort;
             public int count;
 
-#if false
-            public T[] elements;
-            public TAux[] keys;
-
-            public void Sort(IEnumerable<T, TEnumerator> source)
-            {
-                var buffer = new ArrayBuffer<T, TEnumerator>(source);
-                count = buffer.count;
-                if (count > 0)
-                {
-                    elements = buffer.items;
-                    keys = new TAux[count];
-                    for (int i = 0; i < count; ++i)
-                        keys[i] = sort.GetAux(elements[i]);
-                }
-            }
-#else
             public SortElement<T, TAux>[] items;
 
             public void Sort(IEnumerable<T, TEnumerator> source)
@@ -246,7 +229,6 @@ namespace Inlinq.Sort
                     items[j + 1] = t;
                 }
             }
-#endif
         }
     }
 }
