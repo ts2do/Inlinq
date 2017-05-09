@@ -1,9 +1,9 @@
 ﻿namespace Inlinq.Sort
 {
-    public struct SecondaryChainedKey<TKey, TNextAux>
+    public struct SecondaryChainedKey<TKey, TNextData>
     {
         public TKey key;
         public bool keySet;
-        public TNextAux next;
+        public TNextData next;
     }
 }

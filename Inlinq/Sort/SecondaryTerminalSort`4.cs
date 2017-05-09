@@ -20,33 +20,33 @@ namespace Inlinq.Sort
             this.comparer = comparer;
         }
 
-        public void GetAux(ref T element, out SecondaryKey<TKey> aux)
+        public void GetData(ref T element, out SecondaryKey<TKey> data)
         {
-            aux.key = default(TKey);
-            aux.keySet = false;
+            data.key = default(TKey);
+            data.keySet = false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int Compare(ref T elementX, ref SecondaryKey<TKey> auxX, ref T elementY, ref SecondaryKey<TKey> auxY)
+        public int Compare(ref T elementX, ref SecondaryKey<TKey> dataX, ref T elementY, ref SecondaryKey<TKey> dataY)
         {
-            if (!auxX.keySet)
+            if (!dataX.keySet)
             {
-                auxX.key = selector(elementX);
-                auxX.keySet = true;
+                dataX.key = selector(elementX);
+                dataX.keySet = true;
             }
-            if (!auxY.keySet)
+            if (!dataY.keySet)
             {
-                auxY.key = selector(elementY);
-                auxY.keySet = true;
+                dataY.key = selector(elementY);
+                dataY.keySet = true;
             }
-            return comparer.Compare(auxX.key, auxY.key);
+            return comparer.Compare(dataX.key, dataY.key);
         }
         
         public ISortChain<T, ISecondarySort<T>> Chain<TKey1, TComparer1>(Func<T, TKey1> selector, TComparer1 comparer)
             where TComparer1 : IComparer<TKey1>
             => new SecondaryChainedSort<T, TKey, TComparer, SecondaryTerminalSort<T, TKey1, TComparer1>, SecondaryKey<TKey1>>(this.selector, this.comparer, new SecondaryTerminalSort<T, TKey1, TComparer1>(selector, comparer));
 
-        public ISortRebind<T, TSort> InvertRebind<TSort>(ISortRebind<T, TSort> outer)
+        public TSort InvertRebind<TSort>(ISortRebind<T, TSort> outer)
             => outer.Rebind(this, default(SecondaryKey<TKey>));
     }
 }

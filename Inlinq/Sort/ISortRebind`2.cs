@@ -2,8 +2,7 @@
 {
     interface ISortRebind<T, TSort>
     {
-        TSort UnwrapRebind { get; }
-        ISortRebind<T, TSort> Rebind<TNextSort, TNextAux>(TNextSort nextSort, TNextAux nextAux)
-            where TNextSort : ISecondarySort<T, TNextAux>;
+        TSort Rebind<TNextSort, TNextData>(TNextSort nextSort, TNextData nextData)
+            where TNextSort : ISecondarySort<T, TNextData>;
     }
 }

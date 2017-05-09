@@ -1,8 +1,8 @@
 ﻿namespace Inlinq.Sort
 {
-    public struct PrimaryChainedKey<TKey, TNextAux>
+    public struct PrimaryChainedKey<TKey, TNextData>
     {
         public TKey key;
-        public TNextAux next;
+        public TNextData next;
     }
 }

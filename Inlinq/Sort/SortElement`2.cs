@@ -1,8 +1,8 @@
 ﻿namespace Inlinq.Sort
 {
-    internal struct SortElement<T, TAux>
+    internal struct SortElement<T, TData>
     {
         public T element;
-        public TAux aux;
+        public TData data;
     }
 }

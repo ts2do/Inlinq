@@ -1,8 +1,8 @@
 ﻿namespace Inlinq.Sort
 {
-    internal interface ISort<T, TAux>
+    internal interface ISort<T, TData>
     {
-        void GetAux(ref T element, out TAux aux);
-        int Compare(ref T elementX, ref TAux auxX, ref T elementY, ref TAux auxY);
+        void GetData(ref T element, out TData data);
+        int Compare(ref T elementX, ref TData dataX, ref T elementY, ref TData dataY);
     }
 }

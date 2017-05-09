@@ -1,5 +1,5 @@
 ﻿namespace Inlinq.Sort
 {
-    internal interface ISecondarySort<T, TAux> : ISecondarySort<T>, ISort<T, TAux>
+    internal interface ISecondarySort<T, TData> : ISecondarySort<T>, ISort<T, TData>
     { }
 }

@@ -26,10 +26,10 @@ namespace Inlinq.Sort
             => SortUtil<T>.Sort(source, this, default(TKey), out startIndex, out endIndex);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void GetAux(ref T element, out TKey aux) => aux = selector(element);
+        public void GetData(ref T element, out TKey data) => data = selector(element);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int Compare(ref T elementX, ref TKey auxX, ref T elementY, ref TKey auxY) => comparer.Compare(auxX, auxY);
+        public int Compare(ref T elementX, ref TKey dataX, ref T elementY, ref TKey dataY) => comparer.Compare(dataX, dataY);
 
         public ISortChain<T, IPrimarySort<T>> Chain<TKey1, TComparer1>(Func<T, TKey1> selector, TComparer1 comparer)
             where TComparer1 : IComparer<TKey1>

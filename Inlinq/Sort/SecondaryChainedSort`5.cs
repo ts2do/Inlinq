@@ -4,19 +4,18 @@ using System.Runtime.CompilerServices;
 
 namespace Inlinq.Sort
 {
-    internal struct SecondaryChainedSort<T, TKey, TComparer, TNextSort, TNextAux>
-        : ISecondarySort<T, SecondaryChainedKey<TKey, TNextAux>>,
+    internal struct SecondaryChainedSort<T, TKey, TComparer, TNextSort, TNextData>
+        : ISecondarySort<T, SecondaryChainedKey<TKey, TNextData>>,
           ISortRebind<T, ISortChain<T, ISecondarySort<T>>>,
           ISortChain<T, ISecondarySort<T>>
         where TComparer : IComparer<TKey>
-        where TNextSort : ISecondarySort<T, TNextAux>
+        where TNextSort : ISecondarySort<T, TNextData>
     {
         private Func<T, TKey> selector;
         private TComparer comparer;
         private TNextSort nextSort;
         
         public ISecondarySort<T> UnwrapChain => this;
-        public ISortChain<T, ISecondarySort<T>> UnwrapRebind => this;
 
         public SecondaryChainedSort(Func<T, TKey> selector, TComparer comparer, TNextSort nextSort)
         {
@@ -25,39 +24,39 @@ namespace Inlinq.Sort
             this.nextSort = nextSort;
         }
 
-        public void GetAux(ref T element, out SecondaryChainedKey<TKey, TNextAux> aux)
+        public void GetData(ref T element, out SecondaryChainedKey<TKey, TNextData> data)
         {
-            aux.key = default(TKey);
-            aux.keySet = false;
-            aux.next = default(TNextAux);
+            data.key = default(TKey);
+            data.keySet = false;
+            data.next = default(TNextData);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int Compare(ref T elementX, ref SecondaryChainedKey<TKey, TNextAux> auxX, ref T elementY, ref SecondaryChainedKey<TKey, TNextAux> auxY)
+        public int Compare(ref T elementX, ref SecondaryChainedKey<TKey, TNextData> dataX, ref T elementY, ref SecondaryChainedKey<TKey, TNextData> dataY)
         {
-            if (!auxX.keySet)
+            if (!dataX.keySet)
             {
-                auxX.key = selector(elementX);
-                auxX.keySet = true;
+                dataX.key = selector(elementX);
+                dataX.keySet = true;
             }
-            if (!auxY.keySet)
+            if (!dataY.keySet)
             {
-                auxY.key = selector(elementY);
-                auxY.keySet = true;
+                dataY.key = selector(elementY);
+                dataY.keySet = true;
             }
-            int c = comparer.Compare(auxX.key, auxY.key);
-            return c != 0 ? c : nextSort.Compare(ref elementX, ref auxX.next, ref elementY, ref auxY.next);
+            int c = comparer.Compare(dataX.key, dataY.key);
+            return c != 0 ? c : nextSort.Compare(ref elementX, ref dataX.next, ref elementY, ref dataY.next);
         }
 
         public ISortChain<T, ISecondarySort<T>> Chain<TKey1, TComparer1>(Func<T, TKey1> selector, TComparer1 comparer)
             where TComparer1 : IComparer<TKey1>
-            => nextSort.Chain(selector, comparer).UnwrapChain.InvertRebind(this).UnwrapRebind;
+            => nextSort.Chain(selector, comparer).UnwrapChain.InvertRebind(this);
 
-        public ISortRebind<T, TSort> InvertRebind<TSort>(ISortRebind<T, TSort> outer)
-            => outer.Rebind(this, default(SecondaryChainedKey<TKey, TNextAux>));
+        public TSort InvertRebind<TSort>(ISortRebind<T, TSort> outer)
+            => outer.Rebind(this, default(SecondaryChainedKey<TKey, TNextData>));
 
-        public ISortRebind<T, ISortChain<T, ISecondarySort<T>>> Rebind<TNextSort1, TNextAux1>(TNextSort1 nextSort, TNextAux1 nextAux)
-            where TNextSort1 : ISecondarySort<T, TNextAux1>
-            => new SecondaryChainedSort<T, TKey, TComparer, TNextSort1, TNextAux1>(selector, comparer, nextSort);
+        public ISortChain<T, ISecondarySort<T>> Rebind<TNextSort1, TNextData1>(TNextSort1 nextSort, TNextData1 nextData)
+            where TNextSort1 : ISecondarySort<T, TNextData1>
+            => new SecondaryChainedSort<T, TKey, TComparer, TNextSort1, TNextData1>(selector, comparer, nextSort);
     }
 }
