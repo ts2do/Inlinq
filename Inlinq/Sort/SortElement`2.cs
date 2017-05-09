@@ -1,10 +1,8 @@
 ﻿namespace Inlinq.Sort
 {
-    internal class SortElement<T, TAux> : SortElement<T>
+    internal struct SortElement<T, TAux>
     {
-        public SortElement() { }
-        public SortElement(T element) : base(element) { }
-        public SortElement(T element, TAux aux) : base(element) { this.aux = aux; }
+        public T element;
         public TAux aux;
     }
 }

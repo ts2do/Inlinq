@@ -8,9 +8,9 @@ namespace Inlinq.Impl
         where TEnumerator : IEnumerator<T>
     {
         private IEnumerable<T, TEnumerator> source;
-        private IPrimarySort<T> primarySort;
+        private ISortChain<T, IPrimarySort<T>> primarySort;
 
-        internal OrderedEnumerable(IEnumerable<T, TEnumerator> source, IPrimarySort<T> primarySort)
+        internal OrderedEnumerable(IEnumerable<T, TEnumerator> source, ISortChain<T, IPrimarySort<T>> primarySort)
         {
             this.source = source;
             this.primarySort = primarySort;
@@ -23,6 +23,6 @@ namespace Inlinq.Impl
         public override bool GetCount(out int count) => source.GetCount(out count);
 
         public override OrderedEnumerator<T, TEnumerator> GetEnumerator()
-            => new OrderedEnumerator<T, TEnumerator>(source, primarySort);
+            => new OrderedEnumerator<T, TEnumerator>(source, primarySort.Unwrap);
     }
 }

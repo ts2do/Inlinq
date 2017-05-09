@@ -3,11 +3,9 @@ using System.Collections.Generic;
 
 namespace Inlinq.Sort
 {
-    internal interface IPrimarySort<T>
+    internal interface IPrimarySort<T> : ISortChain<T, IPrimarySort<T>>
     {
-        SortedArray<T> Sort<TEnumerator>(IEnumerable<T, TEnumerator> source)
+        Func<int, T> Sort<TEnumerator>(IEnumerable<T, TEnumerator> source, out int startIndex, out int endIndex)
             where TEnumerator : IEnumerator<T>;
-        IPrimarySort<T> Chain<TKey, TComparer>(Func<T, TKey> selector, TComparer comparer)
-            where TComparer : IComparer<TKey>;
     }
 }

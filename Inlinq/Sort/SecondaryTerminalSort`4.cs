@@ -10,6 +10,8 @@ namespace Inlinq.Sort
         private Func<T, TKey> selector;
         private TComparer comparer;
 
+        public ISecondarySort<T> Unwrap => this;
+
         public SecondaryTerminalSort(Func<T, TKey> selector, TComparer comparer)
         {
             this.selector = selector;
@@ -38,14 +40,11 @@ namespace Inlinq.Sort
             return comparer.Compare(auxX.key, auxY.key);
         }
         
-        public ISecondaryChainedSort<T> Chain<TKey1, TComparer1>(Func<T, TKey1> selector, TComparer1 comparer)
+        public ISecondarySort<T> Chain<TKey1, TComparer1>(Func<T, TKey1> selector, TComparer1 comparer)
             where TComparer1 : IComparer<TKey1>
             => new SecondaryChainedSort<T, TKey, TComparer, SecondaryTerminalSort<T, TKey1, TComparer1>, SecondaryKey<TKey1>>(this.selector, this.comparer, new SecondaryTerminalSort<T, TKey1, TComparer1>(selector, comparer));
 
-        public ISecondaryChainedSort<T> InvertRebind(ISecondaryChainedSort<T> outer)
-            => outer.Rebind(this, default(SecondaryKey<TKey>));
-
-        public IPrimaryChainedSort<T> InvertRebind(IPrimaryChainedSort<T> outer)
+        public ISortRebind<T, TSort> InvertRebind<TSort>(ISortRebind<T, TSort> outer)
             => outer.Rebind(this, default(SecondaryKey<TKey>));
     }
 }

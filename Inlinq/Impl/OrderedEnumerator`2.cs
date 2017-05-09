@@ -10,23 +10,25 @@ namespace Inlinq.Impl
     {
         private IEnumerable<T, TEnumerator> source;
         private IPrimarySort<T> primarySort;
-        private SortedArray<T> items;
+        private Func<int, T> itemAccessor;
+        private int endIndex;
         private int index;
 
         public T Current
-            => index.LtUn(items.count) ? items.items[index].element : throw Error.EnumerableStateException(index.GtUn(items.count));
+            => index.LtUn(endIndex) ? itemAccessor(index) : throw Error.EnumerableStateException(index.GtUn(endIndex));
 
         internal OrderedEnumerator(IEnumerable<T, TEnumerator> source, IPrimarySort<T> primarySort)
         {
             this.source = source;
             this.primarySort = primarySort;
-            items = new SortedArray<T>();
+            itemAccessor = null;
+            endIndex = 0;
             index = 1;
         }
 
         public bool MoveNext()
         {
-            switch (1 + items.count - index)
+            switch (1 + endIndex - index)
             {
                 default:
                     ++index;
@@ -46,14 +48,14 @@ namespace Inlinq.Impl
 
         private bool MoveNextSlow()
         {
-            items = primarySort.Sort(source);
-            index = 0;
-            return items.count > 0;
+            itemAccessor = primarySort.Sort(source, out index, out endIndex);
+            return endIndex > 0;
         }
 
         public void Reset()
         {
-            items = new SortedArray<T>();
+            itemAccessor = null;
+            endIndex = 0;
             index = 1;
         }
 

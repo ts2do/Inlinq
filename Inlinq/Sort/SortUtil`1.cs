@@ -6,18 +6,21 @@ namespace Inlinq.Sort
 {
     internal static class SortUtil<T>
     {
-        public static SortedArray<T> Sort<TEnumerator, TSort, TAux>(IEnumerable<T, TEnumerator> source, TSort sort, TAux aux)
+        public static Func<int, T> Sort<TEnumerator, TSort, TAux>(IEnumerable<T, TEnumerator> source, TSort sort, TAux aux, out int startIndex, out int endIndex)
             where TEnumerator : IEnumerator<T>
-            where TSort : IPrimarySort<T, TAux>
+            where TSort : ISort<T, TAux>
         {
-            var sorter = new Sorter<TEnumerator, TSort, TAux> { sort = sort };
+            Sorter<TEnumerator, TSort, TAux> sorter = new Sorter<TEnumerator, TSort, TAux> { sort = sort };
             sorter.Sort(source);
-            return new SortedArray<T>(sorter.items, sorter.count);
+            startIndex = 0;
+            endIndex = sorter.count;
+            SortElement<T, TAux>[] items = sorter.items;
+            return i => items[i].element;
         }
 
         private struct Sorter<TEnumerator, TSort, TAux>
             where TEnumerator : IEnumerator<T>
-            where TSort : IPrimarySort<T, TAux>
+            where TSort : ISort<T, TAux>
         {
             public TSort sort;
             public int count;
@@ -32,7 +35,7 @@ namespace Inlinq.Sort
                 count = 0;
                 if (capacity > 0)
                 {
-                    using (var enumerator = source.GetEnumerator())
+                    using (TEnumerator enumerator = source.GetEnumerator())
                     {
                         if (enumerator.MoveNext())
                         {
@@ -42,9 +45,10 @@ namespace Inlinq.Sort
                                 if (count == capacity)
                                     Array.Resize(ref items, checked(capacity *= 2));
 
-                                var p = new SortElement<T, TAux>(enumerator.Current);
+                                ref SortElement<T, TAux> p = ref items[count];
+                                p.element = enumerator.Current;
                                 sort.GetAux(ref p.element, out p.aux);
-                                items[count++] = p;
+                                ++count;
                             } while (enumerator.MoveNext());
                         }
                     }
@@ -91,7 +95,7 @@ namespace Inlinq.Sort
             private void SwapIfGreater(int a, int b)
             {
                 ref SortElement<T, TAux> first = ref items[a], second = ref items[b];
-                if (Compare(first, second) > 0)
+                if (Compare(ref first, ref second) > 0)
                     Util.Swap(ref first, ref second);
             }
 
@@ -146,8 +150,8 @@ namespace Inlinq.Sort
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private int Compare(SortElement<T, TAux> left, SortElement<T, TAux> right)
-                => sort.Compare(left, right);
+            private int Compare(ref SortElement<T, TAux> left, ref SortElement<T, TAux> right)
+                => sort.Compare(ref left.element, ref left.aux, ref right.element, ref right.aux);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private int PickPivotAndPartition(int lo, int hi)
@@ -160,14 +164,14 @@ namespace Inlinq.Sort
                 SwapIfGreater(lo, hi);     // swap the low with the high
                 SwapIfGreater(middle, hi); // swap the middle with the high
 
-                var pivot = items[middle];
+                ref SortElement<T, TAux> pivot = ref items[middle];
                 Swap(middle, hi - 1);
                 int left = lo, right = hi - 1;  // We already partitioned lo and hi and put the pivot in hi - 1.  And we pre-increment & decrement below.
 
                 while (left < right)
                 {
-                    while (Compare(items[++left], pivot) < 0) ;
-                    while (Compare(pivot, items[--right]) < 0) ;
+                    while (Compare(ref items[++left], ref pivot) < 0) ;
+                    while (Compare(ref pivot, ref items[--right]) < 0) ;
 
                     if (left >= right)
                         break;
@@ -197,16 +201,16 @@ namespace Inlinq.Sort
 
             private void DownHeap(int i, int n, int lo)
             {
-                var d = items[lo + i - 1];
+                ref SortElement<T, TAux> d = ref items[lo + i - 1];
                 int child;
                 while (i <= n / 2)
                 {
                     child = 2 * i;
-                    if (child < n && Compare(items[lo + child - 1], items[lo + child]) < 0)
+                    if (child < n && Compare(ref items[lo + child - 1], ref items[lo + child]) < 0)
                     {
                         child++;
                     }
-                    if (Compare(d, items[lo + child - 1]) >= 0)
+                    if (Compare(ref d, ref items[lo + child - 1]) >= 0)
                         break;
                     items[lo + i - 1] = items[lo + child - 1];
                     i = child;
@@ -220,8 +224,8 @@ namespace Inlinq.Sort
                 for (int i = lo; i < hi; ++i)
                 {
                     int j = i;
-                    var t = items[i + 1];
-                    while (j >= lo && Compare(t, items[j]) < 0)
+                    ref SortElement<T, TAux> t = ref items[i + 1];
+                    while (j >= lo && Compare(ref t, ref items[j]) < 0)
                     {
                         items[j + 1] = items[j];
                         --j;
