@@ -4,13 +4,15 @@ using System.Runtime.CompilerServices;
 
 namespace Inlinq.Sort
 {
-    internal struct SecondaryTerminalSort<T, TKey, TComparer> : ISecondarySort<T, SecondaryKey<TKey>>
+    internal struct SecondaryTerminalSort<T, TKey, TComparer>
+        : ISecondarySort<T, SecondaryKey<TKey>>,
+          ISortChain<T, ISecondarySort<T>>
         where TComparer : IComparer<TKey>
     {
         private Func<T, TKey> selector;
         private TComparer comparer;
 
-        public ISecondarySort<T> Unwrap => this;
+        public ISecondarySort<T> UnwrapChain => this;
 
         public SecondaryTerminalSort(Func<T, TKey> selector, TComparer comparer)
         {
@@ -40,7 +42,7 @@ namespace Inlinq.Sort
             return comparer.Compare(auxX.key, auxY.key);
         }
         
-        public ISecondarySort<T> Chain<TKey1, TComparer1>(Func<T, TKey1> selector, TComparer1 comparer)
+        public ISortChain<T, ISecondarySort<T>> Chain<TKey1, TComparer1>(Func<T, TKey1> selector, TComparer1 comparer)
             where TComparer1 : IComparer<TKey1>
             => new SecondaryChainedSort<T, TKey, TComparer, SecondaryTerminalSort<T, TKey1, TComparer1>, SecondaryKey<TKey1>>(this.selector, this.comparer, new SecondaryTerminalSort<T, TKey1, TComparer1>(selector, comparer));
 

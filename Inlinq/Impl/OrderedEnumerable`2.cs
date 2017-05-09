@@ -23,6 +23,6 @@ namespace Inlinq.Impl
         public override bool GetCount(out int count) => source.GetCount(out count);
 
         public override OrderedEnumerator<T, TEnumerator> GetEnumerator()
-            => new OrderedEnumerator<T, TEnumerator>(source, primarySort.Unwrap);
+            => new OrderedEnumerator<T, TEnumerator>(source, primarySort.UnwrapChain);
     }
 }

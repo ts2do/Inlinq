@@ -4,13 +4,16 @@ using System.Runtime.CompilerServices;
 
 namespace Inlinq.Sort
 {
-    internal struct PrimaryTerminalSort<T, TKey, TComparer> : IPrimarySort<T>, ISort<T, TKey>
+    internal struct PrimaryTerminalSort<T, TKey, TComparer>
+        : ISort<T, TKey>,
+          IPrimarySort<T>,
+          ISortChain<T, IPrimarySort<T>>
         where TComparer : IComparer<TKey>
     {
         private Func<T, TKey> selector;
         private TComparer comparer;
 
-        public IPrimarySort<T> Unwrap => throw new NotImplementedException();
+        public IPrimarySort<T> UnwrapChain => this;
 
         public PrimaryTerminalSort(Func<T, TKey> selector, TComparer comparer)
         {
@@ -28,7 +31,7 @@ namespace Inlinq.Sort
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int Compare(ref T elementX, ref TKey auxX, ref T elementY, ref TKey auxY) => comparer.Compare(auxX, auxY);
 
-        public IPrimarySort<T> Chain<TKey1, TComparer1>(Func<T, TKey1> selector, TComparer1 comparer)
+        public ISortChain<T, IPrimarySort<T>> Chain<TKey1, TComparer1>(Func<T, TKey1> selector, TComparer1 comparer)
             where TComparer1 : IComparer<TKey1>
             => new PrimaryChainedSort<T, TKey, TComparer, SecondaryTerminalSort<T, TKey1, TComparer1>, SecondaryKey<TKey1>>(this.selector, this.comparer, new SecondaryTerminalSort<T, TKey1, TComparer1>(selector, comparer));
     }

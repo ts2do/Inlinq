@@ -4,7 +4,11 @@ using System.Runtime.CompilerServices;
 
 namespace Inlinq.Sort
 {
-    internal struct PrimaryChainedSort<T, TKey, TComparer, TNextSort, TNextAux> : ISortRebind<T, IPrimarySort<T>>, IPrimarySort<T>, ISort<T, PrimaryChainedKey<TKey, TNextAux>>
+    internal struct PrimaryChainedSort<T, TKey, TComparer, TNextSort, TNextAux>
+        : ISort<T, PrimaryChainedKey<TKey, TNextAux>>,
+          IPrimarySort<T>,
+          ISortRebind<T, ISortChain<T, IPrimarySort<T>>>,
+          ISortChain<T, IPrimarySort<T>>
         where TComparer : IComparer<TKey>
         where TNextSort : ISecondarySort<T, TNextAux>
     {
@@ -12,7 +16,8 @@ namespace Inlinq.Sort
         private TComparer comparer;
         private TNextSort nextSort;
 
-        public IPrimarySort<T> Unwrap => this;
+        public IPrimarySort<T> UnwrapChain => this;
+        public ISortChain<T, IPrimarySort<T>> UnwrapRebind => this;
 
         public PrimaryChainedSort(Func<T, TKey> selector, TComparer comparer, TNextSort nextSort)
         {
@@ -39,11 +44,11 @@ namespace Inlinq.Sort
             return c != 0 ? c : nextSort.Compare(ref elementX, ref auxX.next, ref elementY, ref auxX.next);
         }
 
-        public IPrimarySort<T> Chain<TKey1, TComparer1>(Func<T, TKey1> selector, TComparer1 comparer)
+        public ISortChain<T, IPrimarySort<T>> Chain<TKey1, TComparer1>(Func<T, TKey1> selector, TComparer1 comparer)
             where TComparer1 : IComparer<TKey1>
-            => nextSort.Chain(selector, comparer).InvertRebind(this).Unwrap;
+            => nextSort.Chain(selector, comparer).UnwrapChain.InvertRebind(this).UnwrapRebind;
 
-        public ISortRebind<T, IPrimarySort<T>> Rebind<TNextSort1, TNextAux1>(TNextSort1 nextSort, TNextAux1 nextAux)
+        public ISortRebind<T, ISortChain<T, IPrimarySort<T>>> Rebind<TNextSort1, TNextAux1>(TNextSort1 nextSort, TNextAux1 nextAux)
             where TNextSort1 : ISecondarySort<T, TNextAux1>
             => new PrimaryChainedSort<T, TKey, TComparer, TNextSort1, TNextAux1>(selector, comparer, nextSort);
     }
